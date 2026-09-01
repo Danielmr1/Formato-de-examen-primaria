@@ -1,0 +1,8 @@
+{
+  "name": "DocuExam - Creador de Exámenes en Bloques Dinámicos",
+  "description": "Dashboard tipo Word para diseñar exámenes interactivos e imprimibles con bloques modulares cuadrados y rectangulares, preguntas enriquecidas y figuras.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
