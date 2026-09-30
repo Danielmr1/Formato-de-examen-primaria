@@ -89,8 +89,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* Brand & Document Name */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[180px] sm:min-w-[240px] md:min-w-[280px] max-w-xs sm:max-w-md lg:max-w-lg">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs font-bold shrink-0">
-            <BookOpen className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs font-bold shrink-0">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
+              v2.1
+            </span>
           </div>
           
           <div className="flex-1 min-w-0 relative flex items-center">

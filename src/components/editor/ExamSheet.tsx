@@ -218,112 +218,16 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         })}
       </div>
 
-      {/* Empty State / Add block helper when empty */}
+      {/* Empty State / Limpio sin botones duplicados */}
       {exam.blocks.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed border-slate-300 rounded-2xl p-6 my-4">
-          <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-          <h3 className="font-extrabold text-slate-700 text-sm">No hay preguntas en este examen todavía</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
-            Comienza insertando preguntas con o sin alternativas, recuadros de desarrollo o figuras geométricas:
+        <div className="text-center py-10 border border-dashed border-slate-300 rounded-xl p-6 my-4 select-none">
+          <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-xs font-semibold text-slate-500">
+            Este examen aún no tiene preguntas.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'multiple_choice', false)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-xs transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Opción Múltiple (1/2)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'statement_only', false)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-bold shadow-xs transition-all cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5 text-slate-600" />
-              <span>+ Sin Alternativas (1/2)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddBlock(12, 'statement_only', false)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold shadow-xs transition-all cursor-pointer"
-            >
-              <RectangleHorizontal className="w-3.5 h-3.5" />
-              <span>+ Ancho Total (12/12)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'statement_only', true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg font-bold shadow-2xs transition-all cursor-pointer"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
-              <span>+ Con Figura</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddBlock(12, 'open_development', false)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg font-bold shadow-2xs transition-all cursor-pointer"
-            >
-              <Grid className="w-3.5 h-3.5 text-emerald-600" />
-              <span>+ Desarrollo / Cuadrícula</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Add Bar at Bottom of Sheet */}
-      {activeView === 'editor' && exam.blocks.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-dashed border-slate-300 flex flex-wrap items-center justify-center gap-2 print:hidden select-none">
-          <span className="text-xs font-bold text-slate-500 mr-1">+ Añadir pregunta al final:</span>
-          <button
-            type="button"
-            onClick={() => onAddBlock(6, 'multiple_choice', false)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
-            title="Añadir pregunta con alternativas A, B, C, D"
-          >
-            <Plus className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Opción Múltiple</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onAddBlock(6, 'statement_only', false)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
-            title="Añadir pregunta directa o conceptual SIN alternativas A, B, C, D"
-          >
-            <FileText className="w-3.5 h-3.5 text-slate-600" />
-            <span>Sin Alternativas</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onAddBlock(6, 'statement_only', true)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-800 border border-slate-200 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
-            title="Añadir pregunta con figura o diagrama"
-          >
-            <ImageIcon className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Con Figura</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onAddBlock(12, 'open_development', false)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
-            title="Añadir ejercicio con cuadrícula para desarrollo"
-          >
-            <Grid className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Desarrollo</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onAddBlock(6, 'true_false', false)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-800 border border-slate-200 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
-            title="Añadir afirmaciones de Verdadero o Falso"
-          >
-            <CheckSquare className="w-3.5 h-3.5 text-sky-600" />
-            <span>V / F</span>
-          </button>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Haz clic en los botones de la barra superior (+ Opción Múltiple, Verdadero/Falso, etc.) para comenzar a agregar ejercicios.
+          </p>
         </div>
       )}
     </div>

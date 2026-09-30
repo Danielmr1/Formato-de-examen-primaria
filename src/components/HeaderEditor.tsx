@@ -100,16 +100,6 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                       </button>
                     )}
                   </div>
-                ) : !isPrintMode ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="h-10 px-2.5 rounded-lg border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 flex items-center gap-1.5 text-xs font-bold shrink-0 transition-all cursor-pointer"
-                    title="Haz clic aquí para cargar el logo o insignia del colegio"
-                  >
-                    <Upload className="w-4 h-4 text-indigo-600" />
-                    <span>Subir Logo</span>
-                  </button>
                 ) : null}
 
                 <div className="flex-1 min-w-0">
@@ -301,16 +291,6 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                       </button>
                     )}
                   </div>
-                ) : !isPrintMode ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="h-9 px-2 rounded-lg border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 flex items-center gap-1.5 text-xs font-bold shrink-0 transition-all cursor-pointer"
-                    title="Haz clic aquí para cargar el logo o insignia del colegio"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Subir Logo</span>
-                  </button>
                 ) : null}
 
                 <div className="flex-1 min-w-0">
