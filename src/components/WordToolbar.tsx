@@ -420,22 +420,6 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                     </button>
                   ))}
                 </div>
-
-                {/* Justificar Enunciados Toggle */}
-                <button
-                  type="button"
-                  onClick={() => onUpdateSettings({ statementJustify: !exam.settings.statementJustify })}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
-                    exam.settings.statementJustify
-                      ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                  title="Justificar de margen a margen el texto de los enunciados"
-                >
-                  <AlignJustify className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Justificar Enunciados</span>
-                  {exam.settings.statementJustify && <Check className="w-3 h-3 text-indigo-600 ml-0.5" />}
-                </button>
               </div>
             </div>
 
@@ -498,34 +482,6 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                       title="Estilo Moderno sin recuadro pesado"
                     >
                       Moderno
-                    </button>
-                  </div>
-
-                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Título:</span>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateHeader({ titleAlignment: 'left' })}
-                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
-                        exam.header.titleAlignment !== 'center'
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                      title="Alinear título a la izquierda"
-                    >
-                      Izquierda
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateHeader({ titleAlignment: 'center' })}
-                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
-                        exam.header.titleAlignment === 'center'
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                      title="Centrar título del examen"
-                    >
-                      Centrado
                     </button>
                   </div>
                 </div>

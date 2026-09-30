@@ -57,7 +57,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
     xlarge: 'w-24 sm:w-28 h-[88px] sm:h-[98px]'
   }[header.scoreBoxSize || 'large'];
 
-  const titleAlignClass = header.titleAlignment === 'center' ? 'text-center' : 'text-left';
+  const titleAlignClass = 'text-center';
 
   return (
     <div className="w-full mb-4 sm:mb-5 text-slate-800 transition-all group relative">

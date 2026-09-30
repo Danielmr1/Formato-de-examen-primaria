@@ -180,9 +180,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                             }
                           }, 30);
                         }}
-                        className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-slate-300 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 ${
-                          statementJustify ? 'text-justify' : 'text-left'
-                        }`}
+                        className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-slate-300 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 text-justify`}
                       >
                         <FormattedMathText text={block.statement} />
                       </div>
@@ -206,9 +204,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                           }}
                           placeholder="Escribe la pregunta aquí..."
                           rows={1}
-                          className={`w-full ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 p-0.5 bg-transparent rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 focus:bg-slate-50/40 focus:outline-hidden transition-all resize-none overflow-hidden font-normal ${
-                            statementJustify ? 'text-justify' : 'text-left'
-                          }`}
+                          className={`w-full ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 p-0.5 bg-transparent rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 focus:bg-slate-50/40 focus:outline-hidden transition-all resize-none overflow-hidden font-normal text-justify`}
                           style={{ minHeight: '26px' }}
                           autoFocus={isStatementFocused}
                         />
@@ -235,16 +231,14 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 
                   <FormattedMathText
                     text={block.statement}
-                    className={`hidden print:block ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 font-normal ${
-                      statementJustify ? 'text-justify' : 'text-left'
-                    }`}
+                    className={`hidden print:block ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 font-normal text-justify`}
                   />
                 </>
               ) : (
                 <div 
                   className={`${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 ${
                     block.type === 'reading_passage' ? 'p-2 bg-amber-50/40 rounded-lg border-l-4 border-amber-500 italic' : ''
-                  } ${statementJustify ? 'text-justify' : 'text-left'}`}
+                  } text-justify`}
                 >
                   {block.type === 'reading_passage' && (
                     <span className="inline-block mr-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded not-italic">
