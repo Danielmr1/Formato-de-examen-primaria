@@ -180,16 +180,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                             }
                           }, 30);
                         }}
-                        className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-indigo-300 hover:bg-slate-50/70 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 ${
+                        className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-slate-300 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 ${
                           statementJustify ? 'text-justify' : 'text-left'
-                        } group/statement relative`}
-                        title="Haz clic para editar el enunciado (admite fórmulas matemáticas y negrita)"
+                        }`}
                       >
                         <FormattedMathText text={block.statement} />
-                        <span className="opacity-0 group-hover/statement:opacity-100 transition-opacity absolute right-1 top-1 text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded shadow-2xs pointer-events-none flex items-center gap-1">
-                          <Edit3 className="w-2.5 h-2.5" />
-                          Editar
-                        </span>
                       </div>
                     ) : (
                       <div className="relative">
@@ -209,7 +204,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                           onBlur={() => {
                             setTimeout(() => setIsStatementFocused(false), 150);
                           }}
-                          placeholder="Escribe el enunciado aquí... (ej: **negrita**, x^2, \frac{a}{b})"
+                          placeholder="Escribe la pregunta aquí..."
                           rows={1}
                           className={`w-full ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 p-0.5 bg-transparent rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 focus:bg-slate-50/40 focus:outline-hidden transition-all resize-none overflow-hidden font-normal ${
                             statementJustify ? 'text-justify' : 'text-left'

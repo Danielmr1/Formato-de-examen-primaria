@@ -185,10 +185,10 @@ export function useExamState() {
       const blockNum = `${count}`;
 
       const defaultOptions: ChoiceOption[] = [
-        { id: `opt-1`, label: 'A', text: 'Primera alternativa de respuesta' },
-        { id: `opt-2`, label: 'B', text: 'Segunda alternativa de respuesta', isCorrect: true },
-        { id: `opt-3`, label: 'C', text: 'Tercera alternativa de respuesta' },
-        { id: `opt-4`, label: 'D', text: 'Cuarta alternativa de respuesta' },
+        { id: `opt-1`, label: 'A', text: 'Opción A' },
+        { id: `opt-2`, label: 'B', text: 'Opción B', isCorrect: true },
+        { id: `opt-3`, label: 'C', text: 'Opción C' },
+        { id: `opt-4`, label: 'D', text: 'Opción D' },
       ];
 
       let figureData: FigureData | undefined = undefined;
@@ -204,8 +204,8 @@ export function useExamState() {
         id: `blk-${Date.now()}`,
         titleNumber: blockNum,
         statement: type === 'reading_passage' 
-          ? 'Escriba aquí el texto de lectura o caso de estudio para el análisis del estudiante...'
-          : 'Escriba aquí el enunciado de la pregunta. Puede utilizar **negrita** para resaltar conceptos y añadir figuras.',
+          ? 'Escribe aquí el texto de lectura...'
+          : 'Escribe aquí la pregunta...',
         type: type,
         width: width,
         points: type === 'reading_passage' ? 0 : 2,
@@ -213,18 +213,18 @@ export function useExamState() {
         figure: figureData,
         options: (type === 'multiple_choice') ? defaultOptions : undefined,
         trueFalseOptions: (type === 'true_false') ? [
-          { id: `tf-1`, statement: 'Primera afirmación para verificar si es verdadera o falsa.', isTrue: true },
-          { id: `tf-2`, statement: 'Segunda afirmación para verificar si es verdadera o falsa.', isTrue: false },
+          { id: `tf-1`, statement: 'Afirmación 1', isTrue: true },
+          { id: `tf-2`, statement: 'Afirmación 2', isTrue: false },
         ] : undefined,
         developmentConfig: (type === 'open_development') ? {
           style: 'grid',
           heightPx: 120,
-          promptHint: 'Espacio cuadriculado para cálculo y operaciones paso a paso'
+          promptHint: 'Espacio de resolución'
         } : undefined,
         matchingPairs: (type === 'matching') ? [
-          { id: 'm-1', leftText: 'Concepto o término 1', rightText: 'Definición o descripción A' },
-          { id: 'm-2', leftText: 'Concepto o término 2', rightText: 'Definición o descripción B' },
-          { id: 'm-3', leftText: 'Concepto o término 3', rightText: 'Definición o descripción C' },
+          { id: 'm-1', leftText: 'Elemento 1', rightText: 'Definición A' },
+          { id: 'm-2', leftText: 'Elemento 2', rightText: 'Definición B' },
+          { id: 'm-3', leftText: 'Elemento 3', rightText: 'Definición C' },
         ] : undefined
       };
 
