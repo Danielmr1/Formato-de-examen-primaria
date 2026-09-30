@@ -86,27 +86,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         activeView === 'preview_a4' ? 'shadow-2xl ring-1 ring-indigo-500/20' : ''
       }`}
     >
-      {/* Guardrail de Límite de Hoja A4: Guía visual si el contenido excede 1 página física */}
-      {activeView === 'editor' && sheetHeight > 1050 && (
-        <div 
-          className="absolute left-0 right-0 pointer-events-none border-b-2 border-dashed border-amber-400/90 z-20 flex items-center justify-center print:hidden" 
-          style={{ top: '1050px' }}
-        >
-          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1 select-none">
-            📄 ─── Fin estimado de Página 1 (A4) • El contenido siguiente pasará a la Página 2 ───
-          </span>
-        </div>
-      )}
-      {activeView === 'editor' && sheetHeight > 2150 && (
-        <div 
-          className="absolute left-0 right-0 pointer-events-none border-b-2 border-dashed border-amber-400/90 z-20 flex items-center justify-center print:hidden" 
-          style={{ top: '2150px' }}
-        >
-          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1 select-none">
-            📄 ─── Fin estimado de Página 2 (A4) • El contenido siguiente pasará a la Página 3 ───
-          </span>
-        </div>
-      )}
+
 
       {/* Header Banner Mode Indicator in Solution Mode */}
       {activeView === 'solution_key' && (

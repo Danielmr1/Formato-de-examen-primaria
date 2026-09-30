@@ -10,7 +10,6 @@ import { Navbar } from './components/Navbar';
 import { WordToolbar } from './components/WordToolbar';
 import { ExamSheet } from './components/editor/ExamSheet';
 import { UndoToast } from './components/editor/UndoToast';
-import { DeviceSyncBanner } from './components/navigation/DeviceSyncBanner';
 import { DiagramLibraryModal } from './components/DiagramLibraryModal';
 import { StudentExamModal } from './components/StudentExamModal';
 import { ExamsManagerModal } from './components/ExamsManagerModal';
@@ -204,20 +203,7 @@ export const App: React.FC = () => {
         questionsWithoutKeyCount={questionsWithoutKeyCount}
       />
 
-      {/* Banner de sincronización para invitados o exámenes recientes */}
-      <DeviceSyncBanner
-        currentUser={currentUser}
-        recentCloudExam={recentCloudExam}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
-        onLoadRecentCloudExam={(cloudDoc) => {
-          setExam(cloudDoc);
-          setCurrentExamId(cloudDoc.id);
-          clearRecentCloudExam();
-          notify(`Examen "${cloudDoc.title}" cargado en pantalla`);
-        }}
-        onDismissRecentCloudExam={clearRecentCloudExam}
-        isExamEmpty={isExamEmpty}
-      />
+
 
       {/* Barra de herramientas estilo Ribbon Word (solo en modo edición) */}
       {activeView === 'editor' && (

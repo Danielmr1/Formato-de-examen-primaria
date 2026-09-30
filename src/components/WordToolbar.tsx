@@ -124,118 +124,102 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
       {/* Ribbon Body Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
         {activeTab === 'blocks' && (
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
-            
-            {/* Opción Múltiple */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'multiple_choice', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border border-indigo-200 rounded-lg font-bold transition-all shadow-2xs cursor-pointer"
-              title="Añadir pregunta con alternativas A, B, C, D"
-            >
-              <Plus className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Opción Múltiple</span>
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            {/* Preguntas */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500 uppercase mr-1 hidden sm:inline">
+                + Pregunta:
+              </span>
 
-            {/* Solo Enunciado (Sin alternativas) */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'statement_only', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-bold transition-all shadow-2xs cursor-pointer"
-              title="Añadir pregunta directa o conceptual SIN alternativas A, B, C, D"
-            >
-              <FileText className="w-3.5 h-3.5 text-slate-600" />
-              <span>Sin Alternativas</span>
-            </button>
-
-            {/* Pregunta con Figura */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'statement_only', true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-800 border border-slate-200 hover:border-indigo-300 rounded-lg text-slate-700 font-semibold transition-all shadow-2xs cursor-pointer"
-              title="Añadir pregunta con diagrama o figura incorporada"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Con Figura</span>
-            </button>
-
-            {/* Desarrollo / Cálculo */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(12, 'open_development', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-emerald-50 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 rounded-lg text-slate-700 font-semibold transition-all shadow-2xs cursor-pointer"
-              title="Añadir ejercicio con recuadro para desarrollo o cuadrícula de operaciones"
-            >
-              <Grid className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Desarrollo</span>
-            </button>
-
-            {/* Verdadero / Falso */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(6, 'true_false', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-sky-50 hover:text-sky-800 border border-slate-200 hover:border-sky-300 rounded-lg text-slate-700 font-semibold transition-all shadow-2xs cursor-pointer"
-              title="Añadir afirmaciones para responder V o F"
-            >
-              <CheckSquare className="w-3.5 h-3.5 text-sky-600" />
-              <span>Verdadero / Falso</span>
-            </button>
-
-            {/* Relacionar Columnas */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(12, 'matching', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-purple-50 hover:text-purple-800 border border-slate-200 hover:border-purple-300 rounded-lg text-slate-700 font-semibold transition-all shadow-2xs cursor-pointer"
-              title="Añadir ejercicio para relacionar conceptos y definiciones"
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-purple-600" />
-              <span>Relacionar</span>
-            </button>
-
-            {/* Reading Passage */}
-            <button
-              type="button"
-              onClick={() => onAddBlock(12, 'reading_passage', false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-amber-50 hover:text-amber-800 border border-slate-200 hover:border-amber-300 rounded-lg text-slate-700 font-semibold transition-all shadow-2xs cursor-pointer"
-              title="Añadir bloque para texto de lectura o comprensión"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-              <span>Lectura</span>
-            </button>
-
-            <div className="w-[1px] h-4 bg-slate-200 mx-1 hidden sm:block"></div>
-
-            {/* Subir Logo de Colegio */}
-            <button
-              type="button"
-              onClick={() => document.getElementById('toolbar-logo-file-input')?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg font-bold transition-all shadow-2xs cursor-pointer"
-              title="Cargar insignia o logo del colegio al encabezado"
-            >
-              <Upload className="w-4 h-4 text-indigo-600" />
-              <span>{exam.header.logoUrl ? 'Cambiar Logo' : 'Logo Colegio'}</span>
-            </button>
-            {exam.header.logoUrl && onUpdateHeader && (
+              {/* Opción Múltiple */}
               <button
                 type="button"
-                onClick={() => onUpdateHeader({ logoUrl: '' })}
-                className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer"
-                title="Quitar logo del colegio"
+                onClick={() => onAddBlock(6, 'multiple_choice', false)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border border-indigo-200 rounded-lg font-bold transition-all shadow-2xs cursor-pointer"
+                title="Añadir pregunta con alternativas A, B, C, D"
               >
-                <Trash2 className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Opción Múltiple</span>
               </button>
-            )}
 
-            {/* Diagram Library Launcher */}
-            <button
-              onClick={onOpenDiagramModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg font-medium transition-all cursor-pointer ml-auto"
-              title="Explorar figuras geométricas, diagramas y células"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Galería de Figuras</span>
-            </button>
+              {/* Verdadero / Falso */}
+              <button
+                type="button"
+                onClick={() => onAddBlock(6, 'true_false', false)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
+                title="Añadir afirmaciones para responder V o F"
+              >
+                <CheckSquare className="w-3.5 h-3.5 text-sky-600" />
+                <span>Verdadero / Falso</span>
+              </button>
 
+              {/* Desarrollo */}
+              <button
+                type="button"
+                onClick={() => onAddBlock(12, 'open_development', false)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
+                title="Espacio con cuadrícula para desarrollo o cálculo"
+              >
+                <Grid className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Desarrollo</span>
+              </button>
+
+              {/* Relacionar Columnas */}
+              <button
+                type="button"
+                onClick={() => onAddBlock(12, 'matching', false)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
+                title="Unir conceptos con flechas"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5 text-purple-600" />
+                <span>Relacionar</span>
+              </button>
+
+              {/* Pregunta Abierta */}
+              <button
+                type="button"
+                onClick={() => onAddBlock(6, 'statement_only', false)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
+                title="Pregunta sin alternativas"
+              >
+                <FileText className="w-3.5 h-3.5 text-slate-600" />
+                <span>Pregunta Abierta</span>
+              </button>
+            </div>
+
+            {/* Elementos adicionales */}
+            <div className="flex items-center gap-1.5">
+              {/* Galería de Figuras */}
+              <button
+                onClick={onOpenDiagramModal}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 rounded-lg font-semibold transition-all cursor-pointer"
+                title="Insertar figuras geométricas o diagramas"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+                <span>+ Figura / Diagrama</span>
+              </button>
+
+              {/* Subir Logo de Colegio */}
+              <button
+                type="button"
+                onClick={() => document.getElementById('toolbar-logo-file-input')?.click()}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all cursor-pointer"
+                title="Cargar insignia del colegio"
+              >
+                <Upload className="w-3.5 h-3.5 text-slate-600" />
+                <span>{exam.header.logoUrl ? 'Cambiar Logo' : 'Logo Colegio'}</span>
+              </button>
+              {exam.header.logoUrl && onUpdateHeader && (
+                <button
+                  type="button"
+                  onClick={() => onUpdateHeader({ logoUrl: '' })}
+                  className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                  title="Quitar logo del colegio"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -465,8 +449,8 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
               </div>
             </div>
 
-            {/* GRUPO 3: RECUADROS (A la derecha en la misma fila) */}
-            <div className="flex flex-col gap-1 shrink-0">
+            {/* GRUPO 3: RECUADROS */}
+            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                 <Square className="w-3 h-3 text-slate-500" />
                 Recuadros
@@ -489,6 +473,74 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* GRUPO 4: ENCABEZADO */}
+            {onUpdateHeader && (
+              <div className="flex flex-col gap-1 shrink-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-slate-500" />
+                  Encabezado
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Estilo:</span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateHeader({ headerStyle: 'boxed' })}
+                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                        exam.header.headerStyle !== 'modern'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Estilo Clásico Institucional con recuadro"
+                    >
+                      Institucional
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateHeader({ headerStyle: 'modern' })}
+                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                        exam.header.headerStyle === 'modern'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Estilo Moderno sin recuadro pesado"
+                    >
+                      Moderno
+                    </button>
+                  </div>
+
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Título:</span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateHeader({ titleAlignment: 'left' })}
+                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                        exam.header.titleAlignment !== 'center'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Alinear título a la izquierda"
+                    >
+                      Izquierda
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateHeader({ titleAlignment: 'center' })}
+                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                        exam.header.titleAlignment === 'center'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Centrar título del examen"
+                    >
+                      Centrado
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
