@@ -1,0 +1,191 @@
+import React, { useState } from 'react';
+import { Plus, Trash2, AlertTriangle, X } from 'lucide-react';
+import { ChoiceOption, ExamBlock } from '../../../types';
+import { FormattedMathText, hasMathContent } from '../../../utils/mathFormatter';
+
+interface MultipleChoiceOptionsProps {
+  block: ExamBlock;
+  isEditor: boolean;
+  isSolutionKey: boolean;
+  onUpdateBlock: (updated: Partial<ExamBlock>) => void;
+  getOptionSizeClass: () => string;
+}
+
+export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
+  block,
+  isEditor,
+  isSolutionKey,
+  onUpdateBlock,
+  getOptionSizeClass
+}) => {
+  const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
+
+  const handleAddOption = () => {
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const currentOptions = block.options || [];
+    const nextIndex = currentOptions.length;
+    const label = letters[nextIndex] || `${nextIndex + 1}`;
+
+    const newOpt: ChoiceOption = {
+      id: `opt-${Date.now()}-${nextIndex}`,
+      label: label,
+      text: `Alternativa ${label}`,
+    };
+
+    onUpdateBlock({
+      options: [...currentOptions, newOpt]
+    });
+  };
+
+  const handleUpdateOption = (optId: string, updated: Partial<ChoiceOption>) => {
+    const currentOptions = block.options || [];
+    onUpdateBlock({
+      options: currentOptions.map(o => o.id === optId ? { ...o, ...updated } : o)
+    });
+  };
+
+  const handleDeleteOption = (optId: string) => {
+    const currentOptions = block.options || [];
+    onUpdateBlock({
+      options: currentOptions.filter(o => o.id !== optId)
+    });
+  };
+
+  const handleSetCorrectOption = (optId: string) => {
+    const currentOptions = block.options || [];
+    onUpdateBlock({
+      options: currentOptions.map(o => ({
+        ...o,
+        isCorrect: o.id === optId ? !o.isCorrect : false
+      }))
+    });
+  };
+
+  const hasCorrectChoice = block.options?.some(o => o.isCorrect);
+
+  return (
+    <div className="mt-1 space-y-1.5">
+      {/* Add Option / Switch Format bar placed between statement and alternatives */}
+      {isEditor && (
+        <div className="flex flex-wrap items-center justify-between gap-1 pb-0.5 print:hidden">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleAddOption}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-0.5 rounded-md border border-dashed border-indigo-200 flex items-center gap-1 transition-colors cursor-pointer"
+              title="Añadir una nueva alternativa (E, F...)"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Añadir alternativa</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onUpdateBlock({ type: 'statement_only', options: undefined })}
+              className="text-[11px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 flex items-center gap-1 transition-colors cursor-pointer"
+              title="Quitar las alternativas para dejar la pregunta como enunciado directo sin opciones"
+            >
+              <X className="w-3 h-3 text-slate-400" />
+              <span>Quitar alternativas (Solo enunciado)</span>
+            </button>
+          </div>
+
+          {/* Guardrail pedagógico: Alerta si ninguna alternativa está marcada como correcta */}
+          {(!block.options || !hasCorrectChoice) && (
+            <span 
+              className="text-[10px] text-amber-800 bg-amber-50 border border-amber-300 rounded px-2 py-0.5 font-bold flex items-center gap-1 shadow-2xs animate-in fade-in"
+              title="Haz clic en la letra de la opción (A, B, C...) para marcar la respuesta correcta de la evaluación"
+            >
+              <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+              <span>Sin respuesta correcta marcada</span>
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {(block.options || []).map((opt) => (
+          <div 
+            key={opt.id}
+            className={`flex items-center gap-2 p-1.5 rounded-lg border ${getOptionSizeClass()} transition-colors ${
+              isSolutionKey && opt.isCorrect
+                ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-bold'
+                : 'bg-slate-50/50 border-slate-200 text-slate-800'
+            }`}
+          >
+            {/* Option Label / Radio Button */}
+            <button
+              type="button"
+              onClick={() => isEditor && handleSetCorrectOption(opt.id)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all ${
+                opt.isCorrect && (isSolutionKey || isEditor)
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'border border-slate-300 bg-white text-slate-700 hover:border-indigo-500'
+              }`}
+              title={isEditor ? 'Haz clic para marcar como respuesta correcta (clave docente)' : ''}
+            >
+              {opt.label}
+            </button>
+
+            {/* Option text */}
+            {isEditor ? (
+              <>
+                <div className="flex-1 min-w-0 print:hidden">
+                  {focusedOptionId !== opt.id && opt.text && hasMathContent(opt.text) ? (
+                    <div
+                      onClick={() => {
+                        setFocusedOptionId(opt.id);
+                        setTimeout(() => {
+                          const input = document.querySelector(`input[data-block-id="${block.id}"][data-opt-id="${opt.id}"]`) as HTMLInputElement | null;
+                          if (input) input.focus();
+                        }, 25);
+                      }}
+                      className="flex-1 cursor-text hover:bg-slate-50 rounded px-1 py-0.5 border-b border-transparent hover:border-slate-300 text-xs text-slate-900"
+                      title="Haz clic para editar la alternativa"
+                    >
+                      <FormattedMathText text={opt.text} />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <input
+                        type="text"
+                        data-block-id={block.id}
+                        data-opt-id={opt.id}
+                        value={opt.text}
+                        onChange={(e) => handleUpdateOption(opt.id, { text: e.target.value })}
+                        onFocus={() => setFocusedOptionId(opt.id)}
+                        onBlur={() => setTimeout(() => setFocusedOptionId(null), 150)}
+                        placeholder="Texto de la alternativa..."
+                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden text-xs py-0.5"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 hidden print:block text-xs">
+                  <FormattedMathText text={opt.text} />
+                </div>
+              </>
+            ) : (
+              <span className="flex-1 text-xs">
+                <FormattedMathText text={opt.text} />
+              </span>
+            )}
+
+            {/* Delete option */}
+            {isEditor && (
+              <button
+                type="button"
+                onClick={() => handleDeleteOption(opt.id)}
+                className="text-slate-400 hover:text-rose-600 p-0.5 rounded print:hidden transition-colors cursor-pointer"
+                title="Eliminar alternativa"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

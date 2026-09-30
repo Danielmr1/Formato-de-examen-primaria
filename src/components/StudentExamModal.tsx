@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   X, 
   CheckCircle2, 
-  XCircle, 
   GraduationCap, 
   Award, 
   RotateCcw, 

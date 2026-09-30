@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "users": {
+      "title": "Docentes",
+      "description": "Perfiles de profesores registrados",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "exams": {
+      "title": "Exámenes",
+      "description": "Evaluaciones creadas por el docente con bloques dinámicos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "userId": { "type": "string" },
+        "header": { "type": "object" },
+        "blocks": { "type": "array" },
+        "settings": { "type": "object" }
+      },
+      "required": ["id", "title", "blocks"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "entity": "users",
+      "description": "Documento de perfil del docente"
+    },
+    "users/{userId}/exams/{examId}": {
+      "entity": "exams",
+      "description": "Examen privado perteneciente exclusivamente al docente autenticado"
+    }
+  }
+}

@@ -4,21 +4,21 @@ import { PRESET_DIAGRAMS } from './sampleFigures';
 export const SAMPLE_EXAMS: ExamDocument[] = [
   {
     id: 'exam-science-bento',
-    title: 'Examen Bimestral de Ciencias y Matemáticas',
+    title: 'Plantilla de Ciencias y Matemáticas',
     createdAt: '2026-08-31',
     header: {
-      institutionName: 'INSTITUTO EDUCATIVO NACIONAL',
-      examTitle: 'EVALUACIÓN BIMESTRAL DE CIENCIAS Y MATEMÁTICAS',
-      subject: 'Física y Geometría Aplicada',
-      teacherName: 'Prof. Daniel Antonio Morales',
-      gradeLevel: '4to Año de Secundaria - Sección A',
+      institutionName: '',
+      examTitle: '',
+      subject: '',
+      teacherName: '',
+      gradeLevel: '',
       durationMinutes: 90,
-      dateStr: '15 de Septiembre, 2026',
+      dateStr: '',
       headerStyle: 'boxed',
       showStudentNameField: true,
       showDateField: true,
       showScoreBox: true,
-      generalInstructions: 'Lea atentamente cada pregunta antes de responder. Utilice lapicero azul o negro para las respuestas definitivas. Está prohibido el uso de dispositivos móviles.'
+      generalInstructions: ''
     },
     settings: {
       paperSize: 'a4',
@@ -35,13 +35,12 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         titleNumber: '01',
         statement: 'De acuerdo con el siguiente triángulo rectángulo, calcule la longitud de la **hipotenusa (c)** aplicando el teorema de Pitágoras si los catetos miden a = 4 cm y b = 3 cm.',
         type: 'multiple_choice',
-        width: 8,
+        width: 7,
         heightMode: 'auto',
         points: 4,
         blockTheme: 'standard',
         figure: {
           svgData: PRESET_DIAGRAMS[0].svg,
-          caption: 'Figura 1: Triángulo rectángulo con catetos dados.',
           position: 'right',
           widthPercent: 45
         },
@@ -57,13 +56,12 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         titleNumber: '02',
         statement: '¿Cuál de las siguientes afirmaciones sobre la función cuadrática f(x) mostrada en la figura es **correcta**?',
         type: 'multiple_choice',
-        width: 4,
+        width: 5,
         heightMode: 'auto',
         points: 3,
         blockTheme: 'standard',
         figure: {
           svgData: PRESET_DIAGRAMS[1].svg,
-          caption: 'Figura 2: Vértice en V(0,3)',
           position: 'top',
           widthPercent: 95
         },
@@ -82,10 +80,9 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         width: 6,
         heightMode: 'auto',
         points: 3,
-        blockTheme: 'accent',
+        blockTheme: 'standard',
         figure: {
           svgData: PRESET_DIAGRAMS[4].svg,
-          caption: 'Figura 3: Célula eucariota animal',
           position: 'right',
           widthPercent: 40
         },
@@ -106,7 +103,6 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         blockTheme: 'standard',
         figure: {
           svgData: PRESET_DIAGRAMS[2].svg,
-          caption: 'Figura 4: Distribución de porcentajes A, B, C y D',
           position: 'left',
           widthPercent: 48
         },
@@ -120,7 +116,7 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
       {
         id: 'blk-5',
         titleNumber: '05',
-        statement: 'Desarrollo y Cálculo: En el sistema de poleas de la Figura 5, si la masa suspendida es **m = 10 kg** y la gravedad es **g = 9.8 m/s²**, halle la fuerza F necesaria para mantener el equilibrio estático. Justifique su procedimiento paso a paso.',
+        statement: 'Desarrollo y Cálculo: En el sistema de poleas, si la masa suspendida es **m = 10 kg** y la gravedad es **g = 9.8 m/s²**, halle la fuerza F necesaria para mantener el equilibrio estático. Justifique su procedimiento paso a paso.',
         type: 'open_development',
         width: 12,
         heightMode: 'tall',
@@ -128,7 +124,6 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         blockTheme: 'highlight',
         figure: {
           svgData: PRESET_DIAGRAMS[5].svg,
-          caption: 'Figura 5: Sistema de polea fija y masa m',
           position: 'right',
           widthPercent: 30
         },
@@ -142,21 +137,21 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
   },
   {
     id: 'exam-literature-grid',
-    title: 'Evaluación de Comprensión Lectora y Lenguaje',
+    title: 'Plantilla de Comprensión Lectora',
     createdAt: '2026-08-31',
     header: {
-      institutionName: 'COLEGIO INTERNACIONAL LOS ÁNGELES',
-      examTitle: 'EVALUACIÓN DE COMPRENSIÓN LECTORA Y RAZONAMIENTO VERBAL',
-      subject: 'Lengua y Literatura Castellana',
-      teacherName: 'Dra. Amanda Cárdenas',
-      gradeLevel: '5to de Secundaria',
+      institutionName: '',
+      examTitle: '',
+      subject: '',
+      teacherName: '',
+      gradeLevel: '',
       durationMinutes: 60,
-      dateStr: '22 de Octubre, 2026',
+      dateStr: '',
       headerStyle: 'modern',
       showStudentNameField: true,
       showDateField: true,
       showScoreBox: true,
-      generalInstructions: 'Responda en base al texto propuesto. Cuide la ortografía, coherencia y puntuación en sus respuestas.'
+      generalInstructions: ''
     },
     settings: {
       paperSize: 'a4',
@@ -173,7 +168,7 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         titleNumber: 'TEXTO I',
         statement: '«En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor. Una olla de algo más vaca que carnero, salpicón las más noches, duelos y quebrantos los sábados, lantejas los viernes, algún palomino de añadidura los domingos, consumían las tres partes de su hacienda...»\n\nEl resto de ella concluían sayo de velarte, calzas de velludo para las fiestas, con sus pantuflos de lo mesmo, y los días de entresemana se honraba con su vellorí de lo más fino.',
         type: 'reading_passage',
-        width: 8,
+        width: 7,
         heightMode: 'tall',
         points: 0,
         blockTheme: 'accent'
@@ -183,7 +178,7 @@ export const SAMPLE_EXAMS: ExamDocument[] = [
         titleNumber: '01',
         statement: 'A partir del fragmento del Texto I, ¿qué aspecto del protagonista se resalta primordialmente en la descripción de su alimentación y vestimenta?',
         type: 'multiple_choice',
-        width: 4,
+        width: 5,
         heightMode: 'auto',
         points: 5,
         blockTheme: 'standard',

@@ -1,8 +1,9 @@
-export type BlockWidth = 12 | 8 | 6 | 4 | 3;
+export type BlockWidth = number; // 1 to 12 columns
 export type BlockHeightMode = 'auto' | 'square' | 'compact' | 'tall' | 'extra-tall';
 
 export type QuestionType = 
   | 'multiple_choice' 
+  | 'statement_only'
   | 'true_false' 
   | 'open_development' 
   | 'matching' 
@@ -58,11 +59,13 @@ export interface ExamBlock {
   matchingPairs?: MatchingPair[];
   teacherNotes?: string;
   blockTheme?: 'standard' | 'accent' | 'minimal' | 'dashed' | 'highlight';
+  customMinHeight?: number;
 }
 
 export interface ExamHeaderConfig {
   institutionName: string;
-  institutionLogo?: string;
+  logoUrl?: string;
+  titleAlignment?: 'left' | 'center';
   examTitle: string;
   subject: string;
   teacherName: string;
@@ -81,6 +84,7 @@ export interface ExamDocument {
   id: string;
   title: string;
   createdAt: string;
+  updatedAt?: string;
   header: ExamHeaderConfig;
   blocks: ExamBlock[];
   settings: {
@@ -92,6 +96,7 @@ export interface ExamDocument {
     showBorders: boolean;
     twoColumnLayout: boolean;
     statementJustify?: boolean;
+    lineSpacing?: 'compact' | 'normal' | 'relaxed';
   };
 }
 

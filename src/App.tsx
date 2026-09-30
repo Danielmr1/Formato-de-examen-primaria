@@ -1,321 +1,135 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Plus, 
-  Square, 
-  RectangleHorizontal, 
-  RectangleVertical, 
-  Columns2, 
-  Image as ImageIcon, 
-  Sparkles, 
-  FileText, 
-  Printer, 
-  Eye, 
-  CheckCircle2, 
-  Info,
-  Download,
-  Upload,
-  BookOpen,
-  LayoutGrid,
-  Check
-} from 'lucide-react';
-import { 
-  BlockWidth, 
-  ExamBlock, 
-  ExamDocument, 
   FigureData, 
-  QuestionType 
+  ExamDocument 
 } from './types';
-import { SAMPLE_EXAMS } from './data/sampleExams';
-import { PRESET_DIAGRAMS } from './data/sampleFigures';
+import { useExamState, sanitizeExam } from './hooks/useExamState';
+import { useCloudSync } from './hooks/useCloudSync';
+import { validateExamJson } from './utils/securitySanitizer';
 import { Navbar } from './components/Navbar';
 import { WordToolbar } from './components/WordToolbar';
-import { HeaderEditor } from './components/HeaderEditor';
-import { BlockItem } from './components/BlockItem';
+import { ExamSheet } from './components/editor/ExamSheet';
+import { UndoToast } from './components/editor/UndoToast';
+import { DeviceSyncBanner } from './components/navigation/DeviceSyncBanner';
 import { DiagramLibraryModal } from './components/DiagramLibraryModal';
 import { StudentExamModal } from './components/StudentExamModal';
+import { ExamsManagerModal } from './components/ExamsManagerModal';
+import { AuthModal } from './components/AuthModal';
 
-export default function App() {
-  // Load initial exam from localStorage or sample
-  const [exam, setExam] = useState<ExamDocument>(() => {
-    const saved = localStorage.getItem('docu_exam_saved');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error loading saved exam', e);
-      }
-    }
-    return SAMPLE_EXAMS[0];
-  });
+export const App: React.FC = () => {
+  // Estado y operaciones del examen
+  const {
+    exam,
+    setExam,
+    currentExamId,
+    setCurrentExamId,
+    examsList,
+    setExamsList,
+    totalPoints,
+    questionsWithoutKeyCount,
+    copiedNotification,
+    setCopiedNotification,
+    undoItem,
+    setUndoItem,
+    notify,
+    handleAddBlock,
+    handleUpdateBlock,
+    handleDeleteBlock,
+    handleDuplicateBlock,
+    handleMoveUp,
+    handleMoveDown,
+    handleResizeWidthPair,
+    handleUpdateExamTitle,
+    handleUpdateHeader,
+    handleUpdateSettings,
+    handleLoadTemplate,
+    handleNewBlankExam,
+    handleSelectExam,
+    handleDeleteExam,
+    handleDuplicateExam,
+    handleRestoreSnapshot
+  } = useExamState();
 
+  // Sincronización en la nube con Firebase
+  const {
+    currentUser,
+    cloudSyncStatus,
+    isCloudSaving,
+    recentCloudExam,
+    clearRecentCloudExam,
+    manualSaveCloud,
+    logout
+  } = useCloudSync(exam, setExam, setExamsList, sanitizeExam, notify);
+
+  // Vistas activas y modales
   const [activeView, setActiveView] = useState<'editor' | 'preview_a4' | 'solution_key' | 'student'>('editor');
-  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState<boolean>(false);
+  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
   const [targetBlockIdForFigure, setTargetBlockIdForFigure] = useState<string | null>(null);
-  const [isStudentModalOpen, setIsStudentModalOpen] = useState<boolean>(false);
-  const [copiedNotification, setCopiedNotification] = useState<string | null>(null);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  const [isExamsManagerOpen, setIsExamsManagerOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Auto-save to localStorage
+  // Guardrail de navegación: Advertir antes de cerrar o recargar si hay guardado en curso
   useEffect(() => {
-    localStorage.setItem('docu_exam_saved', JSON.stringify(exam));
-  }, [exam]);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isCloudSaving || cloudSyncStatus === 'saving') {
+        e.preventDefault();
+        e.returnValue = 'Tienes cambios guardándose en la nube. ¿Seguro que deseas salir?';
+        return e.returnValue;
+      }
+    };
 
-  // Total Points Calculation
-  const totalPoints = useMemo(() => {
-    return exam.blocks.reduce((sum, b) => sum + (b.points || 0), 0);
-  }, [exam.blocks]);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isCloudSaving, cloudSyncStatus]);
 
-  // Update Exam Document Title
-  const handleUpdateExamTitle = (title: string) => {
-    setExam(prev => ({ ...prev, title }));
-  };
-
-  // Update Header Config
-  const handleUpdateHeader = (updated: Partial<ExamDocument['header']>) => {
-    setExam(prev => ({
-      ...prev,
-      header: { ...prev.header, ...updated }
-    }));
-  };
-
-  // Update Settings
-  const handleUpdateSettings = (settings: Partial<ExamDocument['settings']>) => {
-    setExam(prev => ({
-      ...prev,
-      settings: { ...prev.settings, ...settings }
-    }));
-  };
-
-  // Add a new dynamic block with chosen width and question type
-  const handleAddBlock = (width: BlockWidth, type: QuestionType, withFigure: boolean = false) => {
-    const blockNum = (exam.blocks.length + 1).toString().padStart(2, '0');
-    
-    let defaultOptions = [
-      { id: `opt-1`, label: 'A', text: 'Primera alternativa de respuesta' },
-      { id: `opt-2`, label: 'B', text: 'Segunda alternativa de respuesta', isCorrect: true },
-      { id: `opt-3`, label: 'C', text: 'Tercera alternativa de respuesta' },
-      { id: `opt-4`, label: 'D', text: 'Cuarta alternativa de respuesta' },
-    ];
-
-    let figureData: FigureData | undefined = undefined;
-    if (withFigure) {
-      figureData = {
-        svgData: PRESET_DIAGRAMS[0].svg,
-        caption: 'Figura: Diagrama ilustrativo',
-        position: width === 12 ? 'right' : 'top',
-        widthPercent: width === 12 ? 40 : 90
-      };
+  // Selección de diagrama desde la biblioteca modal
+  const handleSelectDiagramForBlock = (figure: FigureData) => {
+    if (targetBlockIdForFigure) {
+      handleUpdateBlock(targetBlockIdForFigure, { figure });
+      notify('Figura insertada en la pregunta');
+    } else {
+      handleAddBlock(6, 'multiple_choice', true);
+      notify('Pregunta con figura agregada');
     }
-
-    const newBlock: ExamBlock = {
-      id: `blk-${Date.now()}`,
-      titleNumber: blockNum,
-      statement: type === 'reading_passage' 
-        ? 'Escriba aquí el texto de lectura o caso de estudio para el análisis del estudiante...'
-        : 'Escriba aquí el enunciado de la pregunta. Puede utilizar **negrita** para resaltar conceptos y añadir figuras.',
-      type: type,
-      width: width,
-      heightMode: type === 'open_development' || type === 'reading_passage' ? 'tall' : 'auto',
-      points: type === 'reading_passage' ? 0 : 4,
-      blockTheme: 'standard',
-      figure: figureData,
-      options: type === 'multiple_choice' ? defaultOptions : undefined,
-      trueFalseOptions: type === 'true_false' ? [
-        { id: `tf-1`, statement: 'Primera afirmación a evaluar (V / F)', isTrue: true },
-        { id: `tf-2`, statement: 'Segunda afirmación a evaluar (V / F)', isTrue: false }
-      ] : undefined,
-      developmentConfig: type === 'open_development' ? {
-        style: 'grid',
-        heightPx: 120,
-        promptHint: ''
-      } : undefined,
-      matchingPairs: type === 'matching' ? [
-        { id: `m-1`, leftText: 'Elemento A', rightText: 'Definición o relación correspondiente' },
-        { id: `m-2`, leftText: 'Elemento B', rightText: 'Definición o relación correspondiente' }
-      ] : undefined
-    };
-
-    setExam(prev => ({
-      ...prev,
-      blocks: [...prev.blocks, newBlock]
-    }));
   };
 
-  // Update specific block
-  const handleUpdateBlock = (blockId: string, updated: Partial<ExamBlock>) => {
-    setExam(prev => ({
-      ...prev,
-      blocks: prev.blocks.map(b => b.id === blockId ? { ...b, ...updated } : b)
-    }));
-  };
-
-  // Delete block
-  const handleDeleteBlock = (blockId: string) => {
-    setExam(prev => ({
-      ...prev,
-      blocks: prev.blocks.filter(b => b.id !== blockId)
-    }));
-  };
-
-  // Duplicate block
-  const handleDuplicateBlock = (blockId: string) => {
-    const target = exam.blocks.find(b => b.id === blockId);
-    if (!target) return;
-    const duplicated: ExamBlock = {
-      ...target,
-      id: `blk-${Date.now()}`,
-      titleNumber: `${target.titleNumber || ''} (copia)`,
-    };
-    const index = exam.blocks.findIndex(b => b.id === blockId);
-    const newBlocks = [...exam.blocks];
-    newBlocks.splice(index + 1, 0, duplicated);
-    setExam(prev => ({ ...prev, blocks: newBlocks }));
-  };
-
-  // Move block up
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    const newBlocks = [...exam.blocks];
-    const temp = newBlocks[index - 1];
-    newBlocks[index - 1] = newBlocks[index];
-    newBlocks[index] = temp;
-    setExam(prev => ({ ...prev, blocks: newBlocks }));
-  };
-
-  // Move block down
-  const handleMoveDown = (index: number) => {
-    if (index === exam.blocks.length - 1) return;
-    const newBlocks = [...exam.blocks];
-    const temp = newBlocks[index + 1];
-    newBlocks[index + 1] = newBlocks[index];
-    newBlocks[index] = temp;
-    setExam(prev => ({ ...prev, blocks: newBlocks }));
-  };
-
-  // Open Figure Modal for specific block
   const handleOpenFigureModalForBlock = (blockId: string) => {
     setTargetBlockIdForFigure(blockId);
     setIsDiagramModalOpen(true);
   };
 
-  // Apply selected figure to target block
-  const handleSelectDiagramForBlock = (figure: FigureData) => {
-    if (targetBlockIdForFigure) {
-      handleUpdateBlock(targetBlockIdForFigure, { figure });
-    } else {
-      // Add a new block with this figure
-      handleAddBlock(6, 'multiple_choice', false);
-      // Attach to the newly added block
-      setTimeout(() => {
-        setExam(prev => {
-          const last = prev.blocks[prev.blocks.length - 1];
-          if (last) {
-            return {
-              ...prev,
-              blocks: prev.blocks.map((b, idx) => idx === prev.blocks.length - 1 ? { ...b, figure } : b)
-            };
-          }
-          return prev;
-        });
-      }, 50);
-    }
-  };
-
-  // Load Template
-  const handleLoadTemplate = (templateId: string) => {
-    const tmpl = SAMPLE_EXAMS.find(t => t.id === templateId);
-    if (tmpl) {
-      setExam(JSON.parse(JSON.stringify(tmpl)));
-    }
-  };
-
-  // Blank Exam
-  const handleNewBlankExam = () => {
-    setExam({
-      id: `exam-${Date.now()}`,
-      title: 'Nuevo Examen en Bloques',
-      createdAt: new Date().toISOString().split('T')[0],
-      header: {
-        institutionName: 'NOMBRE DE TU INSTITUCIÓN O COLEGIO',
-        examTitle: 'EVALUACIÓN ESCRITA DE PRUEBA',
-        subject: 'Asignatura / Curso',
-        teacherName: 'Prof. Tu Nombre',
-        gradeLevel: 'Año / Grado',
-        durationMinutes: 60,
-        dateStr: new Date().toLocaleDateString('es-ES'),
-        headerStyle: 'boxed',
-        showStudentNameField: true,
-        showDateField: true,
-        showScoreBox: true,
-        generalInstructions: 'Lea detenidamente las preguntas antes de responder.'
-      },
-      settings: {
-        paperSize: 'a4',
-        fontFamily: 'sans',
-        baseFontSize: 'md',
-        gridColumns: 12,
-        showPointsInPrint: true,
-        showBorders: true,
-        twoColumnLayout: false
-      },
-      blocks: [
-        {
-          id: `blk-1`,
-          titleNumber: '01',
-          statement: 'Escriba aquí la primera pregunta de su evaluación. Puede modificar el tamaño a cuadrado o rectángulo usando la barra superior.',
-          type: 'multiple_choice',
-          width: 6,
-          heightMode: 'auto',
-          points: 5,
-          blockTheme: 'standard',
-          options: [
-            { id: 'opt-1', label: 'A', text: 'Opción 1' },
-            { id: 'opt-2', label: 'B', text: 'Opción 2', isCorrect: true },
-            { id: 'opt-3', label: 'C', text: 'Opción 3' },
-            { id: 'opt-4', label: 'D', text: 'Opción 4' }
-          ]
-        },
-        {
-          id: `blk-2`,
-          titleNumber: '02',
-          statement: 'Segunda pregunta en bloque cuadrado complementario al lado:',
-          type: 'multiple_choice',
-          width: 6,
-          heightMode: 'auto',
-          points: 5,
-          blockTheme: 'standard',
-          options: [
-            { id: 'opt-21', label: 'A', text: 'Respuesta A' },
-            { id: 'opt-22', label: 'B', text: 'Respuesta B', isCorrect: true }
-          ]
-        }
-      ]
-    });
-  };
-
-  // Math symbol insertion
+  // Inserción de símbolos matemáticos
   const handleInsertMathSymbol = (symbol: string) => {
     navigator.clipboard.writeText(symbol);
-    setCopiedNotification(`¡Símbolo "${symbol}" copiado al portapapeles!`);
-    setTimeout(() => setCopiedNotification(null), 3000);
+
+    const activeEl = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+    if (activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT')) {
+      const start = activeEl.selectionStart ?? activeEl.value.length;
+      const end = activeEl.selectionEnd ?? activeEl.value.length;
+      const originalValue = activeEl.value;
+      const nextValue = originalValue.slice(0, start) + symbol + originalValue.slice(end);
+      activeEl.value = nextValue;
+      activeEl.selectionStart = activeEl.selectionEnd = start + symbol.length;
+      activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+      notify(`¡"${symbol}" insertado en el texto!`);
+    } else {
+      notify(`¡"${symbol}" copiado al portapapeles! Pégalo con Ctrl+V`);
+    }
   };
 
-  // Print
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Export JSON
-  const handleExportJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exam, null, 2));
+  // Exportar examen a JSON
+  const handleExportExam = (targetExam: ExamDocument) => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(targetExam, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `${exam.title.replace(/\s+/g, '_')}.json`);
+    downloadAnchor.setAttribute("download", `${(targetExam.title || 'examen').replace(/\s+/g, '_')}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   };
 
-  // Import JSON
+  // Importar examen desde archivo JSON con guardrail de validación
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -323,31 +137,45 @@ export default function App() {
       reader.onload = (event) => {
         try {
           const parsed = JSON.parse(event.target?.result as string);
-          if (parsed && parsed.blocks && parsed.header) {
-            setExam(parsed);
+          const validation = validateExamJson(parsed);
+
+          if (!validation.isValid || !validation.sanitizedExam) {
+            notify(`❌ Error en archivo: ${validation.error || 'Estructura no válida'}`, 4500);
+            return;
           }
+
+          const importedExam = validation.sanitizedExam;
+          setExamsList(prev => {
+            const filtered = prev.filter(item => item.id !== importedExam.id);
+            const next = [importedExam, ...filtered];
+            localStorage.setItem('docu_teacher_exams_list', JSON.stringify(next));
+            return next;
+          });
+          setExam(importedExam);
+          setCurrentExamId(importedExam.id);
+          notify(`✓ Examen "${importedExam.title}" importado y verificado con éxito`);
         } catch (err) {
-          alert('Error al leer el archivo de examen JSON');
+          notify('❌ Error: El archivo seleccionado no tiene formato JSON válido.', 4000);
         }
       };
       reader.readAsText(file);
     }
   };
 
-  // Font family css class
+  // Estilo de tipografía base
   const getFontClass = () => {
     switch (exam.settings.fontFamily) {
       case 'serif': return 'font-serif';
       case 'mono': return 'font-mono';
-      case 'sans':
       default: return 'font-sans';
     }
   };
 
+  const isExamEmpty = exam.blocks.length === 0 && (!exam.header.examTitle || exam.header.examTitle.trim() === '');
+
   return (
     <div className={`min-h-screen bg-slate-200/70 text-slate-900 ${getFontClass()} flex flex-col`}>
-      
-      {/* Top Navbar */}
+      {/* Barra de navegación principal */}
       <Navbar
         exam={exam}
         onUpdateExamTitle={handleUpdateExamTitle}
@@ -361,13 +189,37 @@ export default function App() {
         }}
         onLoadTemplate={handleLoadTemplate}
         onNewBlankExam={handleNewBlankExam}
-        onPrint={handlePrint}
-        onExportJson={handleExportJson}
+        onPrint={() => window.print()}
+        onExportJson={() => handleExportExam(exam)}
         onImportJson={handleImportJson}
         totalPoints={totalPoints}
+        onOpenExamsManager={() => setIsExamsManagerOpen(true)}
+        examsCount={examsList.length}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLogout={logout}
+        isCloudSaving={isCloudSaving}
+        cloudSyncStatus={cloudSyncStatus}
+        onManualSaveCloud={() => manualSaveCloud(exam)}
+        questionsWithoutKeyCount={questionsWithoutKeyCount}
       />
 
-      {/* Word-style Ribbon Toolbar (Visible only in editor view) */}
+      {/* Banner de sincronización para invitados o exámenes recientes */}
+      <DeviceSyncBanner
+        currentUser={currentUser}
+        recentCloudExam={recentCloudExam}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLoadRecentCloudExam={(cloudDoc) => {
+          setExam(cloudDoc);
+          setCurrentExamId(cloudDoc.id);
+          clearRecentCloudExam();
+          notify(`Examen "${cloudDoc.title}" cargado en pantalla`);
+        }}
+        onDismissRecentCloudExam={clearRecentCloudExam}
+        isExamEmpty={isExamEmpty}
+      />
+
+      {/* Barra de herramientas estilo Ribbon Word (solo en modo edición) */}
       {activeView === 'editor' && (
         <WordToolbar
           exam={exam}
@@ -378,139 +230,36 @@ export default function App() {
           }}
           onInsertMathSymbol={handleInsertMathSymbol}
           onUpdateSettings={handleUpdateSettings}
+          onUpdateHeader={handleUpdateHeader}
         />
       )}
 
-      {/* Notification Toast */}
-      {copiedNotification && (
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2">
-          <Check className="w-4 h-4 text-emerald-400" />
-          <span>{copiedNotification}</span>
-        </div>
-      )}
+      {/* Toast interactivo con Guardrail de Deshacer (Undo) */}
+      <UndoToast
+        notification={copiedNotification}
+        undoItem={undoItem}
+        onClearUndo={() => setUndoItem(null)}
+      />
 
-      {/* Main Workspace / A4 Sheet View */}
+      {/* Espacio de trabajo / Hoja de examen A4 */}
       <main className="flex-1 py-3 sm:py-5 px-1 sm:px-3 flex justify-center items-start overflow-y-auto">
-        
-        {/* Printable / Visual Paper Sheet Container */}
-        <div className={`page-sheet w-full max-w-4xl bg-white shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5 md:p-6 transition-all ${
-          activeView === 'preview_a4' ? 'shadow-2xl ring-1 ring-indigo-500/20' : ''
-        }`}>
-          
-          {/* Header Banner Mode Indicator in Solution Mode */}
-          {activeView === 'solution_key' && (
-            <div className="mb-4 p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-emerald-900 flex items-center justify-between text-xs print:hidden">
-              <div className="flex items-center gap-2 font-extrabold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>MODO CLAVE DE RESPUESTAS PARA EL DOCENTE ACTIVO</span>
-              </div>
-              <span className="text-[11px] font-medium text-emerald-700">Las alternativas correctas se resaltan en verde</span>
-            </div>
-          )}
-
-          {/* Institutional Header */}
-          <HeaderEditor
-            header={exam.header}
-            onUpdateHeader={handleUpdateHeader}
-            isPrintMode={activeView === 'preview_a4'}
-            totalScore={totalPoints}
-          />
-
-          {/* Dynamic Bento Grid of Question Blocks */}
-          <div className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start">
-            {exam.blocks.map((block, idx) => (
-              <BlockItem
-                key={block.id}
-                block={block}
-                index={idx}
-                totalBlocks={exam.blocks.length}
-                onUpdateBlock={(updated) => handleUpdateBlock(block.id, updated)}
-                onDeleteBlock={() => handleDeleteBlock(block.id)}
-                onDuplicateBlock={() => handleDuplicateBlock(block.id)}
-                onMoveUp={() => handleMoveUp(idx)}
-                onMoveDown={() => handleMoveDown(idx)}
-                onOpenFigureModal={() => handleOpenFigureModalForBlock(block.id)}
-                viewMode={activeView}
-                showBorders={exam.settings.showBorders}
-                baseFontSize={exam.settings.baseFontSize}
-                statementJustify={exam.settings.statementJustify}
-              />
-            ))}
-          </div>
-
-          {/* Empty State / Add block helper when empty */}
-          {exam.blocks.length === 0 && (
-            <div className="text-center py-12 border-2 border-dashed border-slate-300 rounded-2xl p-6 my-4">
-              <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-              <h3 className="font-extrabold text-slate-700 text-sm">No hay preguntas en este examen todavía</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
-                Comienza insertando bloques dinámicos cuadrados, rectangulares o preguntas con figuras desde los botones inferiores.
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <button
-                  onClick={() => handleAddBlock(6, 'multiple_choice', false)}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold"
-                >
-                  + Añadir Bloque Cuadrado (6/12)
-                </button>
-                <button
-                  onClick={() => handleAddBlock(12, 'multiple_choice', true)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold"
-                >
-                  + Pregunta con Figura (12/12)
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Add Bar at the bottom of the document */}
-          {activeView === 'editor' && (
-            <div className="mt-8 pt-6 border-t-2 border-dashed border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs print:hidden">
-              <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
-                Añadir nuevo bloque al examen:
-              </span>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => handleAddBlock(6, 'multiple_choice', false)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-300 rounded-lg font-bold text-slate-700 shadow-2xs transition-all"
-                >
-                  <Square className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>+ Cuadrado (1/2)</span>
-                </button>
-
-                <button
-                  onClick={() => handleAddBlock(12, 'multiple_choice', false)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-300 rounded-lg font-bold text-slate-700 shadow-2xs transition-all"
-                >
-                  <RectangleHorizontal className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>+ Rectángulo Ancho (12/12)</span>
-                </button>
-
-                <button
-                  onClick={() => handleAddBlock(4, 'multiple_choice', false)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-300 rounded-lg font-bold text-slate-700 shadow-2xs transition-all"
-                >
-                  <RectangleVertical className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>+ Vertical (1/3)</span>
-                </button>
-
-                <button
-                  onClick={() => handleAddBlock(6, 'multiple_choice', true)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg font-bold shadow-2xs transition-all"
-                >
-                  <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>+ Pregunta con Figura</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-        </div>
+        <ExamSheet
+          exam={exam}
+          activeView={activeView}
+          totalPoints={totalPoints}
+          onUpdateHeader={handleUpdateHeader}
+          onUpdateBlock={handleUpdateBlock}
+          onDeleteBlock={handleDeleteBlock}
+          onDuplicateBlock={handleDuplicateBlock}
+          onMoveUp={handleMoveUp}
+          onMoveDown={handleMoveDown}
+          onResizeWidthPair={handleResizeWidthPair}
+          onOpenFigureModalForBlock={handleOpenFigureModalForBlock}
+          onAddBlock={handleAddBlock}
+        />
       </main>
 
-      {/* Diagram Selection / Upload Modal */}
+      {/* Modales modulares */}
       <DiagramLibraryModal
         isOpen={isDiagramModalOpen}
         onClose={() => {
@@ -522,7 +271,6 @@ export default function App() {
         currentFigure={targetBlockIdForFigure ? exam.blocks.find(b => b.id === targetBlockIdForFigure)?.figure : undefined}
       />
 
-      {/* Interactive Student Test-Taking Modal */}
       <StudentExamModal
         isOpen={isStudentModalOpen}
         onClose={() => setIsStudentModalOpen(false)}
@@ -530,6 +278,33 @@ export default function App() {
         totalPoints={totalPoints}
       />
 
+      <ExamsManagerModal
+        isOpen={isExamsManagerOpen}
+        onClose={() => setIsExamsManagerOpen(false)}
+        exams={examsList}
+        currentExamId={currentExamId}
+        onSelectExam={handleSelectExam}
+        onCreateNewExam={handleNewBlankExam}
+        onDuplicateExam={handleDuplicateExam}
+        onDeleteExam={handleDeleteExam}
+        onImportExam={handleImportJson}
+        onExportExam={handleExportExam}
+        onLoadTemplate={handleLoadTemplate}
+        currentUser={currentUser}
+        onOpenAuth={() => {
+          setIsExamsManagerOpen(false);
+          setIsAuthModalOpen(true);
+        }}
+        onRestoreSnapshot={handleRestoreSnapshot}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccessMessage={(msg) => notify(msg, 4000)}
+      />
     </div>
   );
-}
+};
+
+export default App;

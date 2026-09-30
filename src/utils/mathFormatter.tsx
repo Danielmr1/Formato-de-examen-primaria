@@ -48,14 +48,15 @@ export function parseMathText(rawText: string): MathToken[] {
   // 2. LaTeX Mixed Number: (\d+)\s*\\frac\{(\d+)\}\{(\d+)\}
   // 3. LaTeX Fraction: \\frac\{([^}]+)\}\{([^}]+)\}
   // 4. Bracketed Mixed Number: \[(\d+)\s+(\d+)\/(\d+)\]
-  // 5. Standard Mixed Number: (?<=\s|^)(\d+)\s+(\d+)\/(\d+)(?=\s|[.,;:?!)]|$)
-  // 6. Unicode Mixed Number: (?<=\s|^)(\d+)\s*([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])
-  // 7. Unicode Fraction: ([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])
-  // 8. Plain Fraction: (?<=\s|[(\[{=+-]|^)(\d+)\/(\d+)(?=\s|[),;:?!\]}]|$)
-  // 9. Powers: ([a-zA-Z0-9]+)\^\{([^}]+)\} or ([a-zA-Z0-9]+)\^([a-zA-Z0-9+-]+)
-  // 10. Subscripts: ([a-zA-Z0-9]+)_\{([^}]+)\} or ([a-zA-Z0-9]+)_([a-zA-Z0-9]+)
+  // 5. Parenthesized Mixed Number: \((\d+)\s+(\d+)\/(\d+)\)
+  // 6. Standard Mixed Number: (\d+)\s+(\d+)\/(\d+) (with unit or punctuation lookahead)
+  // 7. Unicode Mixed Number: (\d+)\s*([½...])
+  // 8. Standalone Unicode Fraction: ([½...])
+  // 9. Plain Fraction: (\d+)\/(\d+) (with unit or punctuation lookahead)
+  // 10. Powers
+  // 11. Subscripts
 
-  const regex = /(\*\*.*?\*\*)|(?:(\d+)\s*\\frac\{(\d+)\}\{(\d+)\})|(?:\\frac\{([^}]+)\}\{([^}]+)\})|(?:\[(\d+)\s+(\d+)\/(\d+)\])|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\s+(\d+)\/(\d+)(?=\s|[),;:?!\]}]|$))|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\s*([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]))|([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\/(\d+)(?=\s|[),;:?!\]}]|$))|(?:([a-zA-Z0-9]+)\^\{([^}]+)\}|([a-zA-Z0-9]+)\^([a-zA-Z0-9+-]+))|(?:([a-zA-Z0-9]+)_\{([^}]+)\}|([a-zA-Z0-9]+)_([a-zA-Z0-9]+))/g;
+  const regex = /(\*\*.*?\*\*)|(?:(\d+)\s*\\frac\{(\d+)\}\{(\d+)\})|(?:\\frac\{([^}]+)\}\{([^}]+)\})|(?:\[(\d+)\s+(\d+)\/(\d+)\])|(?:\((\d+)\s+(\d+)\/(\d+)\))|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\s+(\d+)\/(\d+)(?=\s|[),;:?!\]}]|[a-zA-Z°%$€]|$)(?!\/\d))|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\s*([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]))|([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|(?:(?:^|(?<=\s|[(\[{=+-]))(\d+)\/(\d+)(?=\s|[),;:?!\]}]|[a-zA-Z°%$€]|$)(?!\/\d))|(?:([a-zA-Z0-9]+)\^\{([^}]+)\}|([a-zA-Z0-9]+)\^([a-zA-Z0-9+-]+))|(?:([a-zA-Z0-9]+)_\{([^}]+)\}|([a-zA-Z0-9]+)_([a-zA-Z0-9]+))/g;
 
   const tokens: MathToken[] = [];
   let lastIndex = 0;
@@ -79,6 +80,8 @@ export function parseMathText(rawText: string): MathToken[] {
       ltxFracNum, ltxFracDen,
       // Bracketed Mixed: \[(\d+)\s+(\d+)\/(\d+)\]
       brkMixWhole, brkMixNum, brkMixDen,
+      // Parenthesized Mixed: \((\d+)\s+(\d+)\/(\d+)\)
+      parenMixWhole, parenMixNum, parenMixDen,
       // Standard Mixed: (\d+)\s+(\d+)\/(\d+)
       stdMixWhole, stdMixNum, stdMixDen,
       // Unicode Mixed: (\d+)\s*([½...])
@@ -117,6 +120,13 @@ export function parseMathText(rawText: string): MathToken[] {
         whole: brkMixWhole,
         num: brkMixNum,
         den: brkMixDen,
+      });
+    } else if (parenMixWhole && parenMixNum && parenMixDen) {
+      tokens.push({
+        type: 'mixed_number',
+        whole: parenMixWhole,
+        num: parenMixNum,
+        den: parenMixDen,
       });
     } else if (stdMixWhole && stdMixNum && stdMixDen) {
       tokens.push({
@@ -330,3 +340,21 @@ function escapeHtml(str: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+/**
+ * Checks if rawText contains mathematical notation like fractions, mixed numbers, powers, subscripts
+ */
+export function hasMathContent(rawText: string): boolean {
+  if (!rawText) return false;
+  return (
+    /(\d+\s+\d+\/\d+)/.test(rawText) ||
+    /(\d+\/\d+)/.test(rawText) ||
+    /([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/.test(rawText) ||
+    /\\frac\{/.test(rawText) ||
+    /\[\d+\s+\d+\/\d+\]/.test(rawText) ||
+    /\(\d+\s+\d+\/\d+\)/.test(rawText) ||
+    /[a-zA-Z0-9]+\^/.test(rawText) ||
+    /[a-zA-Z0-9]+_/.test(rawText)
+  );
+}
+
