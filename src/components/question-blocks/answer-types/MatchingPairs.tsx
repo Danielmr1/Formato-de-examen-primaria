@@ -114,7 +114,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded-md border border-dashed border-indigo-200 flex items-center gap-1 transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>+ Añadir par de emparejamiento</span>
+            <span>Añadir par</span>
           </button>
         </div>
       )}

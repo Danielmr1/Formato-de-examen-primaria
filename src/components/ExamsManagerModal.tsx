@@ -109,7 +109,7 @@ export const ExamsManagerModal: React.FC<ExamsManagerModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Organiza, edita, clona o respalda todas tus evaluaciones en un solo lugar
+                Gestiona y organiza tus evaluaciones
               </p>
             </div>
           </div>
@@ -226,38 +226,22 @@ export const ExamsManagerModal: React.FC<ExamsManagerModalProps> = ({
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50">
-          {/* Cloud Account Status Banner */}
-          <div className="mb-4">
-            {currentUser ? (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 text-xs">
+          {/* Cloud Account Status Banner (only when logged in) */}
+          {currentUser && (
+            <div className="mb-4">
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2 text-emerald-800">
                   <Cloud className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>
-                    Conectado como <b>{currentUser.displayName || currentUser.email}</b>. Tus evaluaciones se guardan de forma privada en Firebase Firestore.
+                    Conectado como <b>{currentUser.displayName || currentUser.email}</b>. Tus evaluaciones se sincronizan en tu cuenta.
                   </span>
                 </div>
                 <span className="hidden sm:inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-full shrink-0 border border-emerald-300">
-                  Base de Datos Segura
+                  Sincronizado
                 </span>
               </div>
-            ) : (
-              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-indigo-900">
-                  <Lock className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>
-                    Estás en <b>modo local (navegador)</b>. Inicia sesión con tu cuenta para respaldar tus exámenes en la nube y acceder desde cualquier lugar.
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpenAuth}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors shadow-2xs shrink-0 cursor-pointer"
-                >
-                  Iniciar Sesión
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {activeTab === 'my_exams' ? (
             filteredExams.length === 0 ? (
@@ -537,11 +521,11 @@ export const ExamsManagerModal: React.FC<ExamsManagerModalProps> = ({
           {/* Tab 3: Snapshots / Automatic Backups */}
           {activeTab === 'snapshots' && (
             <div>
-              <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-900">
+              <div className="mb-4 p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-900">
                 <div className="flex items-center gap-2">
                   <History className="w-4 h-4 text-indigo-600 shrink-0" />
                   <span>
-                    <b>Historial de versiones recientes (Time Machine):</b> El sistema guarda automáticamente copias locales en tu navegador para que puedas retroceder en caso de error accidental.
+                    <b>Historial de versiones:</b> Copias de seguridad automáticas del examen en este navegador.
                   </span>
                 </div>
               </div>
@@ -615,7 +599,7 @@ export const ExamsManagerModal: React.FC<ExamsManagerModalProps> = ({
         <div className="px-5 py-3 border-t border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3 shrink-0">
           <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
             <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Tus exámenes se guardan automáticamente en tu navegador. Usa <b>Importar / Descargar</b> para respaldarlos.</span>
+            <span>Tus exámenes se guardan automáticamente en tu navegador.</span>
           </div>
 
           <button

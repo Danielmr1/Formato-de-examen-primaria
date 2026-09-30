@@ -122,11 +122,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 Plataforma Docente
               </span>
             </div>
-            <h2 className="text-lg font-bold">
-              {mode === 'login' ? 'Iniciar Sesión en DocuExam' : 'Crear Cuenta de Docente'}
+            <h2 className="text-base font-bold">
+              {mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
             </h2>
             <p className="text-xs text-indigo-200 mt-0.5">
-              Accede a tus evaluaciones privadas y sincronízalas en la nube
+              Accede a tus evaluaciones
             </p>
           </div>
 
@@ -311,22 +311,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               ) : mode === 'login' ? (
                 <>
                   <LogIn className="w-4 h-4" />
-                  <span>Ingresar a Mi Panel</span>
+                  <span>Iniciar Sesión</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>Crear Mi Cuenta Gratuita</span>
+                  <span>Crear Cuenta</span>
                 </>
               )}
             </button>
           </form>
-        </div>
-
-        {/* Security badge footer */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Base de datos protegida con reglas de seguridad Firestore de Google</span>
         </div>
       </div>
     </div>

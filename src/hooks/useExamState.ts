@@ -219,7 +219,7 @@ export function useExamState() {
         developmentConfig: (type === 'open_development') ? {
           style: 'grid',
           heightPx: 120,
-          promptHint: 'Espacio de resolución'
+          promptHint: ''
         } : undefined,
         matchingPairs: (type === 'matching') ? [
           { id: 'm-1', leftText: 'Elemento 1', rightText: 'Definición A' },

@@ -316,16 +316,6 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                   Insertar
                 </button>
               </div>
-
-              {/* Tip directo al final */}
-              <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-slate-500 ml-auto shrink-0 pl-2">
-                <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold text-[10px]">
-                  Directo:
-                </span>
-                <span className="text-[11px]">
-                  escribe <code className="bg-white px-1 py-0.5 rounded border border-slate-300 font-mono font-bold text-indigo-700 text-[10px]">3 1/2</code>
-                </span>
-              </div>
             </div>
           </div>
         )}
