@@ -322,8 +322,8 @@ export function useExamState() {
 
   const handleResizeWidthPair = useCallback((leftBlockId: string, rightBlockId: string, newLeftWidth: number, newRightWidth: number) => {
     setExam(prev => {
-      const leftWidth = Math.max(1, Math.min(11, newLeftWidth)) as BlockWidth;
-      const rightWidth = Math.max(1, Math.min(11, newRightWidth)) as BlockWidth;
+      const leftWidth = Math.max(4, Math.min(8, newLeftWidth)) as BlockWidth;
+      const rightWidth = Math.max(4, Math.min(8, newRightWidth)) as BlockWidth;
       return {
         ...prev,
         blocks: prev.blocks.map(b => {

@@ -336,12 +336,12 @@ export const BlockItem: React.FC<BlockItemProps> = ({
             e.stopPropagation();
             if (rightNeighbor && onResizeWidthPair) {
               const currentLeft = block.width || 6;
-              const nextLeft: BlockWidth = currentLeft >= 10 ? 3 : (currentLeft + 1);
+              const nextLeft: BlockWidth = currentLeft >= 8 ? 4 : (currentLeft + 1);
               const nextRight: BlockWidth = 12 - nextLeft;
               onResizeWidthPair(block.id, rightNeighbor.id, nextLeft, nextRight);
             } else {
               const currentW = block.width || 6;
-              const nextW = currentW >= 12 ? 6 : (currentW + 1);
+              const nextW = currentW >= 12 ? 4 : (currentW + 1);
               onUpdateBlock({ width: nextW });
             }
           }}
@@ -356,11 +356,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
               const colsDelta = Math.round(deltaX / 40);
 
               if (rightNeighbor && onResizeWidthPair) {
-                const targetLeft = Math.max(2, Math.min(10, startWidth + colsDelta));
+                const targetLeft = Math.max(4, Math.min(8, startWidth + colsDelta));
                 const targetRight = 12 - targetLeft;
                 onResizeWidthPair(block.id, rightNeighbor.id, targetLeft, targetRight);
               } else {
-                const targetWidth = Math.max(3, Math.min(12, startWidth + colsDelta));
+                const targetWidth = Math.max(4, Math.min(12, startWidth + colsDelta));
                 onUpdateBlock({ width: targetWidth });
               }
             };

@@ -57,7 +57,7 @@ export function validateExamJson(data: any): ValidationResult {
       type: ['multiple_choice', 'true_false', 'open_development', 'matching', 'figure_only', 'reading_passage'].includes(b.type)
         ? b.type
         : 'multiple_choice',
-      width: (typeof b.width === 'number' && b.width >= 1 && b.width <= 12) ? (b.width as any) : 12,
+      width: (typeof b.width === 'number' && b.width >= 4 && b.width <= 12) ? (b.width as any) : 12,
       heightMode: ['auto', 'compact', 'tall'].includes(b.heightMode) ? b.heightMode : 'auto',
       points: typeof b.points === 'number' && !isNaN(b.points) ? Math.max(0, b.points) : 2,
       blockTheme: ['standard', 'accent', 'highlight', 'minimal', 'dashed'].includes(b.blockTheme) ? b.blockTheme : 'standard',
