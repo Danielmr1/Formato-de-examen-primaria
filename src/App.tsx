@@ -8,6 +8,7 @@ import { useCloudSync } from './hooks/useCloudSync';
 import { validateExamJson } from './utils/securitySanitizer';
 import { Navbar } from './components/Navbar';
 import { WordToolbar } from './components/WordToolbar';
+import { PreviewToolbar } from './components/preview/PreviewToolbar';
 import { ExamSheet } from './components/editor/ExamSheet';
 import { UndoToast } from './components/editor/UndoToast';
 
@@ -69,6 +70,8 @@ export const App: React.FC = () => {
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isExamsManagerOpen, setIsExamsManagerOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [previewZoom, setPreviewZoom] = useState(100);
+  const [previewPages, setPreviewPages] = useState(1);
   const lastAddBlockTimeRef = useRef(0);
   const lastManualSaveTimeRef = useRef(0);
 
@@ -342,6 +345,19 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Barra de herramientas de Vista Previa A4 con zoom y contador de páginas */}
+      {(activeView === 'preview_a4' || activeView === 'solution_key') && (
+        <PreviewToolbar
+          totalPages={previewPages}
+          zoom={previewZoom}
+          onZoomChange={setPreviewZoom}
+          onReturnToEditor={() => setActiveView('editor')}
+          onPrint={handlePrintExam}
+          activeView={activeView}
+          onSwitchView={setActiveView}
+        />
+      )}
+
       {/* Toast interactivo con Guardrail de Deshacer (Undo) */}
       <UndoToast
         notification={copiedNotification}
@@ -349,23 +365,33 @@ export const App: React.FC = () => {
         onClearUndo={() => setUndoItem(null)}
       />
 
-      {/* Espacio de trabajo / Hoja de examen A4 */}
-      <main className="flex-1 py-3 sm:py-5 px-1 sm:px-3 flex justify-center items-start overflow-y-auto">
-        <ExamSheet
-          exam={exam}
-          activeView={activeView}
-          totalPoints={totalPoints}
-          onUpdateHeader={handleUpdateHeader}
-          onUpdateBlock={handleUpdateBlock}
-          onDeleteBlock={handleDeleteBlock}
-          onDuplicateBlock={handleDuplicateBlock}
-          onMoveUp={handleMoveUp}
-          onMoveDown={handleMoveDown}
-          onResizeWidthPair={handleResizeWidthPair}
-          onOpenFigureModalForBlock={handleOpenFigureModalForBlock}
-          onAddBlock={handleAddBlock}
-          onUpdateSettings={handleUpdateSettings}
-        />
+      {/* Espacio de trabajo / Hoja de examen A4 con soporte de Zoom */}
+      <main className="flex-1 py-3 sm:py-6 px-1 sm:px-3 flex justify-center items-start overflow-y-auto">
+        <div 
+          style={
+            (activeView === 'preview_a4' || activeView === 'solution_key') && previewZoom !== 100
+              ? { transform: `scale(${previewZoom / 100})`, transformOrigin: 'top center' }
+              : undefined
+          }
+          className="w-full flex justify-center transition-transform duration-150"
+        >
+          <ExamSheet
+            exam={exam}
+            activeView={activeView}
+            totalPoints={totalPoints}
+            onUpdateHeader={handleUpdateHeader}
+            onUpdateBlock={handleUpdateBlock}
+            onDeleteBlock={handleDeleteBlock}
+            onDuplicateBlock={handleDuplicateBlock}
+            onMoveUp={handleMoveUp}
+            onMoveDown={handleMoveDown}
+            onResizeWidthPair={handleResizeWidthPair}
+            onOpenFigureModalForBlock={handleOpenFigureModalForBlock}
+            onAddBlock={handleAddBlock}
+            onUpdateSettings={handleUpdateSettings}
+            onPagesCalculated={setPreviewPages}
+          />
+        </div>
       </main>
 
       {/* Modales cargados bajo demanda (Lazy Loading) */}

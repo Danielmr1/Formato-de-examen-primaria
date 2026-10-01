@@ -31,6 +31,7 @@ interface ExamSheetProps {
   onOpenFigureModalForBlock: (blockId: string) => void;
   onAddBlock: (width?: BlockWidth, type?: QuestionType, withFigure?: boolean) => void;
   onUpdateSettings?: (settings: Partial<ExamDocument['settings']>) => void;
+  onPagesCalculated?: (pages: number) => void;
 }
 
 export const ExamSheet: React.FC<ExamSheetProps> = ({
@@ -46,7 +47,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   onResizeWidthPair,
   onOpenFigureModalForBlock,
   onAddBlock,
-  onUpdateSettings
+  onUpdateSettings,
+  onPagesCalculated
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [sheetHeight, setSheetHeight] = useState<number>(0);
@@ -88,13 +90,44 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   const remainderPx = sheetHeight % A4_PAGE_HEIGHT_PX;
   const isGhostPageRisk = sheetHeight > 0 && estimatedPages > 1 && remainderPx > 0 && remainderPx < 160;
 
+  useEffect(() => {
+    if (onPagesCalculated) {
+      onPagesCalculated(estimatedPages);
+    }
+  }, [estimatedPages, onPagesCalculated]);
+
+  const isPreviewMode = activeView === 'preview_a4' || activeView === 'solution_key';
+
   return (
     <div 
       ref={sheetRef}
-      className={`page-sheet relative w-full max-w-4xl bg-white shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5 md:p-6 transition-all ${
-        activeView === 'preview_a4' ? 'shadow-2xl ring-1 ring-indigo-500/20' : ''
+      className={`page-sheet relative bg-white transition-all ${
+        isPreviewMode 
+          ? 'w-full max-w-[794px] min-h-[1123px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-5 sm:p-7 md:p-8 my-3' 
+          : 'w-full max-w-4xl shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5 md:p-6'
       }`}
     >
+      {/* Indicadores visuales de corte de página A4 (Solo en pantalla en modo Vista Previa) */}
+      {isPreviewMode && estimatedPages > 1 && (
+        <div className="pointer-events-none select-none print:hidden">
+          {Array.from({ length: estimatedPages - 1 }).map((_, i) => {
+            const pageNum = i + 1;
+            return (
+              <div 
+                key={`page-break-${pageNum}`}
+                className="absolute inset-x-0 z-20 flex items-center justify-center pointer-events-none"
+                style={{ top: `${pageNum * A4_PAGE_HEIGHT_PX}px` }}
+              >
+                <div className="w-full border-b-2 border-dashed border-indigo-400/80 relative flex items-center justify-center">
+                  <span className="bg-indigo-50 text-indigo-800 font-black text-[10px] px-3 py-0.5 rounded-full border border-indigo-300 shadow-xs tracking-wide">
+                    📄 Fin de Página {pageNum} — Inicio de Página {pageNum + 1}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
 
       {/* Header Banner Mode Indicator in Solution Mode */}
@@ -260,6 +293,14 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
           <p className="text-[11px] text-slate-400 mt-0.5">
             Haz clic en los botones de la barra superior (+ Opción Múltiple, Verdadero/Falso, etc.) para comenzar a agregar ejercicios.
           </p>
+        </div>
+      )}
+
+      {/* Pie de página A4 informativo en modo Vista Previa */}
+      {isPreviewMode && (
+        <div className="mt-8 pt-3 border-t border-slate-200/90 flex items-center justify-between text-[11px] text-slate-400 select-none print:hidden">
+          <span>{exam.header.institutionName || 'Evaluación Escolar'}</span>
+          <span className="font-semibold text-slate-500">Formato A4 • {estimatedPages} {estimatedPages === 1 ? 'página' : 'páginas'}</span>
         </div>
       )}
     </div>
