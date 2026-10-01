@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronUp, 
   ChevronDown, 
   Copy, 
-  ImageIcon
+  ImageIcon,
+  MoreVertical
 } from 'lucide-react';
 import { ExamBlock, QuestionType } from '../../types';
 
@@ -43,6 +44,22 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   onOpenDiagramModal
 }) => {
   if (!isEditor) return null;
+
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
+  const isCompact = (block.width || 6) <= 5;
 
   const handleSelectType = (newType: QuestionType) => {
     if (newType === block.type) return;
@@ -102,14 +119,16 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
           type="text"
           value={block.titleNumber || ''}
           onChange={(e) => onUpdateBlock({ titleNumber: e.target.value })}
-          className="w-8 px-1 py-0.5 text-center font-bold text-indigo-700 bg-white border border-slate-300 rounded focus:border-indigo-500 focus:outline-hidden"
+          className="w-8 px-1 py-0.5 text-center font-bold text-indigo-700 bg-white border border-slate-300 rounded focus:border-indigo-500 focus:outline-hidden shrink-0"
           title="Número de la pregunta"
         />
 
         <select
           value={block.type || 'multiple_choice'}
           onChange={(e) => handleSelectType(e.target.value as QuestionType)}
-          className="bg-white border border-slate-300 rounded px-1.5 py-0.5 font-semibold text-xs text-slate-700 cursor-pointer focus:border-indigo-500 focus:outline-hidden truncate max-w-[130px] sm:max-w-none"
+          className={`bg-white border border-slate-300 rounded px-1.5 py-0.5 font-semibold text-xs text-slate-700 cursor-pointer focus:border-indigo-500 focus:outline-hidden truncate ${
+            isCompact ? 'max-w-[75px] sm:max-w-[90px]' : 'max-w-[130px] sm:max-w-none'
+          }`}
           title="Tipo de pregunta"
         >
           {QUESTION_FORMATS.map(fmt => (
@@ -136,58 +155,149 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
           />
         </div>
 
-        {/* Añadir imagen/figura si no tiene */}
-        {!block.figure && onOpenDiagramModal && (
-          <button
-            type="button"
-            onClick={() => onOpenDiagramModal(block.id)}
-            className="p-1 bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 rounded transition-colors cursor-pointer"
-            title="Añadir una figura o diagrama"
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-          </button>
+        {isCompact ? (
+          /* Modo Compacto (<= 5 columnas): Menú desplegable de 3 puntos */
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setShowMenu(prev => !prev)}
+              className={`p-1 border rounded transition-colors cursor-pointer ${
+                showMenu
+                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                  : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-600'
+              }`}
+              title="Más opciones"
+            >
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in-50">
+                {!block.figure && onOpenDiagramModal && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenDiagramModal(block.id);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Añadir Figura</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => {
+                    onMoveUp(index);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Subir</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={index === totalBlocks - 1}
+                  onClick={() => {
+                    onMoveDown(index);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Bajar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDuplicateBlock(block.id);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Copy className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Duplicar</span>
+                </button>
+
+                <div className="border-t border-slate-100 my-1" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteBlock(block.id);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Eliminar</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Modo Normal (> 5 columnas): Botones horizontales */
+          <>
+            {/* Añadir imagen/figura si no tiene */}
+            {!block.figure && onOpenDiagramModal && (
+              <button
+                type="button"
+                onClick={() => onOpenDiagramModal(block.id)}
+                className="p-1 bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 rounded transition-colors cursor-pointer"
+                title="Añadir una figura o diagrama"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {/* Mover Arriba / Abajo */}
+            <button
+              type="button"
+              disabled={index === 0}
+              onClick={() => onMoveUp(index)}
+              className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 disabled:opacity-20 transition-colors cursor-pointer"
+              title="Subir"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              type="button"
+              disabled={index === totalBlocks - 1}
+              onClick={() => onMoveDown(index)}
+              className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 disabled:opacity-20 transition-colors cursor-pointer"
+              title="Bajar"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Duplicar */}
+            <button
+              type="button"
+              onClick={() => onDuplicateBlock(block.id)}
+              className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+              title="Duplicar"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Eliminar */}
+            <button
+              type="button"
+              onClick={() => onDeleteBlock(block.id)}
+              className="p-1 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded transition-colors cursor-pointer"
+              title="Borrar pregunta"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </>
         )}
-
-        {/* Mover Arriba / Abajo */}
-        <button
-          type="button"
-          disabled={index === 0}
-          onClick={() => onMoveUp(index)}
-          className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 disabled:opacity-20 transition-colors cursor-pointer"
-          title="Subir"
-        >
-          <ChevronUp className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          disabled={index === totalBlocks - 1}
-          onClick={() => onMoveDown(index)}
-          className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 disabled:opacity-20 transition-colors cursor-pointer"
-          title="Bajar"
-        >
-          <ChevronDown className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Duplicar */}
-        <button
-          type="button"
-          onClick={() => onDuplicateBlock(block.id)}
-          className="p-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
-          title="Duplicar"
-        >
-          <Copy className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Eliminar */}
-        <button
-          type="button"
-          onClick={() => onDeleteBlock(block.id)}
-          className="p-1 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded transition-colors cursor-pointer"
-          title="Borrar pregunta"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
       </div>
     </div>
   );

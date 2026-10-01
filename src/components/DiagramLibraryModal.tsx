@@ -8,12 +8,19 @@ import {
   Sliders, 
   Eye, 
   Edit3, 
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  Maximize2
 } from 'lucide-react';
 import { PRESET_DIAGRAMS, PresetDiagram } from '../data/sampleFigures';
 import { FigureData, FigurePosition } from '../types';
 import { EDITABLE_TEMPLATES, EditableDiagramTemplate } from '../utils/diagramGenerators';
-import { optimizeImage } from '../utils/imageOptimizer';
+import { 
+  optimizeImage, 
+  validateImageFile, 
+  measureImageAspect, 
+  padImageToSafeRatio 
+} from '../utils/imageOptimizer';
 import { sanitizeSvg } from '../utils/securitySanitizer';
 
 interface DiagramLibraryModalProps {
@@ -47,8 +54,17 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
   const [position, setPosition] = useState<FigurePosition>('right');
   const [widthPercent, setWidthPercent] = useState<number>(45);
 
+  // Guardrails de imagen: validación de tamaño (máx 5MB) y proporción
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [aspectWarning, setAspectWarning] = useState<{ message: string; extremeType?: 'too_wide' | 'too_tall' | 'too_small' } | null>(null);
+  const [isPaddingImage, setIsPaddingImage] = useState<boolean>(false);
+
   useEffect(() => {
     if (isOpen) {
+      setUploadError(null);
+      setAspectWarning(null);
+      setIsPaddingImage(false);
+
       if (currentFigure) {
         setCaption(currentFigure.caption || '');
         setPosition(currentFigure.position || 'right');
@@ -129,12 +145,25 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
     }
   };
 
-  const handleUrlChange = (val: string) => {
+  const handleUrlChange = async (val: string) => {
     setCustomImageUrl(val);
+    setUploadError(null);
+    setAspectWarning(null);
+
     if (val.trim()) {
       setUploadedPreviewUrl(val.trim());
       setUploadedFileName('Enlace Web');
       setUploadedFileSize(null);
+
+      // Evaluar proporción de aspecto si es imagen web
+      try {
+        const aspect = await measureImageAspect(val.trim());
+        if (aspect.warning) {
+          setAspectWarning({ message: aspect.warning, extremeType: aspect.extremeType });
+        }
+      } catch (err) {
+        console.warn('No se pudo verificar proporción de la URL:', err);
+      }
     } else {
       setUploadedPreviewUrl(null);
       setUploadedFileName(null);
@@ -143,8 +172,28 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setUploadError(null);
+    setAspectWarning(null);
+
     if (file) {
-      // 1. Lectura inmediata para mostrar miniatura al instante (sin esperas)
+      // 1. Guardrail de validación previa: Máximo 5 MB y formato permitido
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        setUploadError(validation.error || 'Archivo inválido');
+        setUploadedPreviewUrl(null);
+        setUploadedFileName(null);
+        setUploadedFileSize(null);
+        return;
+      }
+
+      // 2. Medir relación de aspecto (ancho vs alto)
+      measureImageAspect(file).then(aspect => {
+        if (aspect.warning) {
+          setAspectWarning({ message: aspect.warning, extremeType: aspect.extremeType });
+        }
+      }).catch(console.warn);
+
+      // 3. Lectura inmediata para miniatura
       const reader = new FileReader();
       reader.onload = async (event) => {
         const rawUrl = event.target?.result as string;
@@ -153,16 +202,32 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
         setUploadedFileSize(`${Math.round(file.size / 1024)} KB`);
         setCustomImageUrl('');
 
-        // 2. Optimización ligera en segundo plano
+        // 4. Optimización y compresión ligera en segundo plano
         try {
-          const optimized = await optimizeImage(file, 1000, 0.82);
+          const optimized = await optimizeImage(file, 950, 0.82);
           setUploadedPreviewUrl(optimized.dataUrl);
           setUploadedFileSize(`${optimized.originalSizeKb} KB → ${optimized.optimizedSizeKb} KB optimizado`);
-        } catch (err) {
-          console.warn('Compresión en canvas no requerida, usando imagen original:', err);
+        } catch (err: any) {
+          console.warn('Compresión en canvas no requerida o falló:', err);
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Ajusta la imagen centrada sobre un lienzo con marco blanco equilibrado
+  const handleAutoPadImage = async () => {
+    if (!uploadedPreviewUrl) return;
+    setIsPaddingImage(true);
+    try {
+      const padded = await padImageToSafeRatio(uploadedPreviewUrl);
+      setUploadedPreviewUrl(padded);
+      setAspectWarning(null);
+      setUploadedFileName(prev => prev ? `${prev} (ajustada con marco blanco)` : 'Imagen ajustada');
+    } catch (err) {
+      console.error('Error al centrar imagen:', err);
+    } finally {
+      setIsPaddingImage(false);
     }
   };
 
@@ -534,6 +599,40 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
                 </div>
               </div>
 
+              {/* Alerta de Error de Subida (ej. > 5 MB o formato no permitido) */}
+              {uploadError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-start gap-2.5 animate-in fade-in">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 font-semibold">{uploadError}</div>
+                </div>
+              )}
+
+              {/* Alerta de Proporción de Aspecto Excesiva con Botón de Auto-Ajuste */}
+              {aspectWarning && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold block text-amber-900">Aviso de formato de imagen:</span>
+                      <span className="text-[11px] text-amber-800">{aspectWarning.message}</span>
+                    </div>
+                  </div>
+
+                  {(aspectWarning.extremeType === 'too_wide' || aspectWarning.extremeType === 'too_tall') && (
+                    <button
+                      type="button"
+                      onClick={handleAutoPadImage}
+                      disabled={isPaddingImage}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+                      title="Centrar la imagen en un lienzo cuadrado con fondo blanco para que encaje bien en la hoja"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>{isPaddingImage ? 'Ajustando...' : 'Ajustar con marco blanco'}</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* MINIATURA Y VISTA PREVIA DE LA IMAGEN CARGADA */}
               {uploadedPreviewUrl ? (
                 <div className="mt-4 pt-4 border-t border-slate-200 bg-slate-50/80 p-4 rounded-xl border border-slate-200 animate-in fade-in">
@@ -580,6 +679,9 @@ export const DiagramLibraryModal: React.FC<DiagramLibraryModalProps> = ({
                             setUploadedFileName(null);
                             setUploadedFileSize(null);
                             setCustomImageUrl('');
+                            setUploadError(null);
+                            setAspectWarning(null);
+                            setIsPaddingImage(false);
                           }}
                           className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-lg font-semibold text-xs border border-slate-300 transition-colors cursor-pointer"
                         >

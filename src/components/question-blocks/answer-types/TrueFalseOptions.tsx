@@ -2,6 +2,13 @@ import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ExamBlock } from '../../../types';
 import { FormattedMathText } from '../../../utils/mathFormatter';
+import { sanitizeTextLength } from '../../../utils/securitySanitizer';
+
+const getMaxCharsForTF = (cols: number = 12) => {
+  if (cols <= 4) return 70;
+  if (cols <= 6) return 120;
+  return 200;
+};
 
 interface TrueFalseOptionsProps {
   block: ExamBlock;
@@ -16,8 +23,13 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
   isSolutionKey,
   onUpdateBlock
 }) => {
+  const current = block.trueFalseOptions || [];
+  const maxChars = getMaxCharsForTF(block.width || 12);
+  const canAdd = current.length < 5;
+  const canDelete = current.length > 2;
+
   const handleAddTrueFalse = () => {
-    const current = block.trueFalseOptions || [];
+    if (current.length >= 5) return;
     onUpdateBlock({
       trueFalseOptions: [
         ...current,
@@ -31,14 +43,14 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
   };
 
   const handleUpdateTrueFalse = (tfId: string, statement: string, isTrue: boolean) => {
-    const current = block.trueFalseOptions || [];
+    const sanitized = sanitizeTextLength(statement, maxChars, 25);
     onUpdateBlock({
-      trueFalseOptions: current.map(item => item.id === tfId ? { ...item, statement, isTrue } : item)
+      trueFalseOptions: current.map(item => item.id === tfId ? { ...item, statement: sanitized, isTrue } : item)
     });
   };
 
   const handleDeleteTrueFalse = (tfId: string) => {
-    const current = block.trueFalseOptions || [];
+    if (current.length <= 2) return;
     onUpdateBlock({
       trueFalseOptions: current.filter(item => item.id !== tfId)
     });
@@ -46,7 +58,7 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
 
   return (
     <div className="mt-1 space-y-2">
-      {(block.trueFalseOptions || []).map((tf) => (
+      {current.map((tf) => (
         <div 
           key={tf.id}
           className="tf-option-card flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-lg border border-slate-200 text-xs"
@@ -56,8 +68,11 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
               <input
                 type="text"
                 value={tf.statement}
+                maxLength={maxChars}
                 onChange={(e) => handleUpdateTrueFalse(tf.id, e.target.value, tf.isTrue)}
-                className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden print:hidden"
+                className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 print:hidden"
+                placeholder="Escribe la afirmación..."
+                title={`Límite: máx. ${maxChars} caracteres`}
               />
               <span className="flex-1 hidden print:inline">
                 <FormattedMathText text={tf.statement} />
@@ -104,8 +119,13 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
               <button
                 type="button"
                 onClick={() => handleDeleteTrueFalse(tf.id)}
-                className="text-slate-400 hover:text-rose-600 p-0.5 ml-1 print:hidden cursor-pointer"
-                title="Eliminar afirmación"
+                disabled={!canDelete}
+                className={`p-0.5 ml-1 print:hidden transition-colors ${
+                  canDelete
+                    ? 'text-slate-400 hover:text-rose-600 cursor-pointer'
+                    : 'text-slate-200 cursor-not-allowed opacity-30'
+                }`}
+                title={canDelete ? 'Eliminar afirmación' : 'Mínimo 2 afirmaciones requeridas'}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -119,10 +139,16 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
           <button
             type="button"
             onClick={handleAddTrueFalse}
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded-md border border-dashed border-indigo-200 flex items-center gap-1 transition-colors cursor-pointer"
+            disabled={!canAdd}
+            className={`text-xs font-semibold px-2 py-1 rounded-md border border-dashed flex items-center gap-1 transition-colors ${
+              canAdd
+                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-200 cursor-pointer'
+                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
+            }`}
+            title={canAdd ? 'Añadir afirmación' : 'Límite alcanzado: Máximo 5 afirmaciones'}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Añadir afirmación</span>
+            <span>Añadir afirmación {current.length >= 5 ? '(Máx. 5)' : `(${current.length}/5)`}</span>
           </button>
         </div>
       )}

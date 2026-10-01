@@ -28,10 +28,13 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
 }) => {
   const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
   const maxChars = getMaxCharsForOption(block.width || 12);
+  const currentOptions = block.options || [];
+  const canAdd = currentOptions.length < 5;
+  const canDelete = currentOptions.length > 2;
 
   const handleAddOption = () => {
+    if (currentOptions.length >= 5) return;
     const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-    const currentOptions = block.options || [];
     const nextIndex = currentOptions.length;
     const label = letters[nextIndex] || `${nextIndex + 1}`;
 
@@ -47,7 +50,6 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   };
 
   const handleUpdateOption = (optId: string, updated: Partial<ChoiceOption>) => {
-    const currentOptions = block.options || [];
     const sanitizedUpdate = { ...updated };
     if (updated.text !== undefined) {
       sanitizedUpdate.text = sanitizeTextLength(updated.text, maxChars, 25);
@@ -58,14 +60,13 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   };
 
   const handleDeleteOption = (optId: string) => {
-    const currentOptions = block.options || [];
+    if (currentOptions.length <= 2) return;
     onUpdateBlock({
       options: currentOptions.filter(o => o.id !== optId)
     });
   };
 
   const handleSetCorrectOption = (optId: string) => {
-    const currentOptions = block.options || [];
     onUpdateBlock({
       options: currentOptions.map(o => ({
         ...o,
@@ -78,17 +79,22 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
 
   return (
     <div className="mt-1 space-y-1.5">
-      {/* Botón para añadir alternativa */}
+      {/* Botón para añadir alternativa con limitador (Mín 2, Máx 5) */}
       {isEditor && (
         <div className="flex items-center pb-1 print:hidden">
           <button
             type="button"
             onClick={handleAddOption}
-            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-0.5 rounded-md border border-dashed border-indigo-300 flex items-center gap-1 transition-colors cursor-pointer"
-            title="Añadir una nueva alternativa"
+            disabled={!canAdd}
+            className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border border-dashed flex items-center gap-1 transition-colors ${
+              canAdd
+                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
+                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
+            }`}
+            title={canAdd ? 'Añadir una nueva alternativa' : 'Límite alcanzado: Máximo 5 alternativas (A - E)'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Alternativa</span>
+            <span>+ Alternativa {currentOptions.length >= 5 ? '(Máx. 5)' : `(${currentOptions.length}/5)`}</span>
           </button>
         </div>
       )}
@@ -171,8 +177,13 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
               <button
                 type="button"
                 onClick={() => handleDeleteOption(opt.id)}
-                className="text-slate-400 hover:text-rose-600 p-0.5 rounded print:hidden transition-colors cursor-pointer"
-                title="Eliminar alternativa"
+                disabled={!canDelete}
+                className={`p-0.5 rounded print:hidden transition-colors ${
+                  canDelete
+                    ? 'text-slate-400 hover:text-rose-600 cursor-pointer'
+                    : 'text-slate-200 cursor-not-allowed opacity-30'
+                }`}
+                title={canDelete ? 'Eliminar alternativa' : 'Mínimo 2 alternativas requeridas'}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
