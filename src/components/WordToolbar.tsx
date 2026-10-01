@@ -158,7 +158,7 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                 type="button"
                 onClick={() => onAddBlock(12, 'open_development', false)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
-                title="Espacio con cuadrícula para desarrollo o cálculo"
+                title="Espacio para desarrollo (Rayado, Cuadrícula o Libre)"
               >
                 <Grid className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Desarrollo</span>
@@ -175,15 +175,15 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                 <span>Relacionar</span>
               </button>
 
-              {/* Pregunta Abierta */}
+              {/* Solo Enunciado */}
               <button
                 type="button"
                 onClick={() => onAddBlock(6, 'statement_only', false)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-semibold transition-all shadow-2xs cursor-pointer"
-                title="Pregunta sin alternativas"
+                title="Pregunta con solo enunciado (sin caja de respuesta)"
               >
                 <FileText className="w-3.5 h-3.5 text-slate-600" />
-                <span>Pregunta Abierta</span>
+                <span>Solo Enunciado</span>
               </button>
             </div>
 

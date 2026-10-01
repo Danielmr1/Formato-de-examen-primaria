@@ -25,8 +25,8 @@ interface BlockHeaderProps {
 const QUESTION_FORMATS: { id: QuestionType; label: string }[] = [
   { id: 'multiple_choice', label: 'Opción Múltiple' },
   { id: 'true_false', label: 'Verdadero / Falso' },
-  { id: 'statement_only', label: 'Pregunta Abierta' },
-  { id: 'open_development', label: 'Desarrollo / Cálculo' },
+  { id: 'statement_only', label: 'Solo Enunciado' },
+  { id: 'open_development', label: 'Desarrollo (Rayado/Cuadrícula/Libre)' },
   { id: 'matching', label: 'Relacionar' },
   { id: 'reading_passage', label: 'Lectura (0 pts)' },
 ];
@@ -85,7 +85,6 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
         updates.developmentConfig = {
           style: 'grid',
           heightPx: 120,
-          promptHint: 'Espacio de resolución'
         };
       }
     } else if (newType === 'true_false') {
