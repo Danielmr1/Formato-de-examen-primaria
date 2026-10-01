@@ -10,10 +10,12 @@ import { Navbar } from './components/Navbar';
 import { WordToolbar } from './components/WordToolbar';
 import { ExamSheet } from './components/editor/ExamSheet';
 import { UndoToast } from './components/editor/UndoToast';
-import { DiagramLibraryModal } from './components/DiagramLibraryModal';
-import { StudentExamModal } from './components/StudentExamModal';
-import { ExamsManagerModal } from './components/ExamsManagerModal';
-import { AuthModal } from './components/AuthModal';
+
+// Modales cargados bajo demanda para optimizar la velocidad de inicio
+const DiagramLibraryModal = React.lazy(() => import('./components/DiagramLibraryModal').then(m => ({ default: m.DiagramLibraryModal })));
+const StudentExamModal = React.lazy(() => import('./components/StudentExamModal').then(m => ({ default: m.StudentExamModal })));
+const ExamsManagerModal = React.lazy(() => import('./components/ExamsManagerModal').then(m => ({ default: m.ExamsManagerModal })));
+const AuthModal = React.lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
 
 export const App: React.FC = () => {
   // Estado y operaciones del examen
@@ -245,50 +247,60 @@ export const App: React.FC = () => {
         />
       </main>
 
-      {/* Modales modulares */}
-      <DiagramLibraryModal
-        isOpen={isDiagramModalOpen}
-        onClose={() => {
-          setIsDiagramModalOpen(false);
-          setTargetBlockIdForFigure(null);
-        }}
-        onSelectDiagram={handleSelectDiagramForBlock}
-        currentBlockId={targetBlockIdForFigure || undefined}
-        currentFigure={targetBlockIdForFigure ? exam.blocks.find(b => b.id === targetBlockIdForFigure)?.figure : undefined}
-      />
+      {/* Modales cargados bajo demanda (Lazy Loading) */}
+      <React.Suspense fallback={null}>
+        {isDiagramModalOpen && (
+          <DiagramLibraryModal
+            isOpen={isDiagramModalOpen}
+            onClose={() => {
+              setIsDiagramModalOpen(false);
+              setTargetBlockIdForFigure(null);
+            }}
+            onSelectDiagram={handleSelectDiagramForBlock}
+            currentBlockId={targetBlockIdForFigure || undefined}
+            currentFigure={targetBlockIdForFigure ? exam.blocks.find(b => b.id === targetBlockIdForFigure)?.figure : undefined}
+          />
+        )}
 
-      <StudentExamModal
-        isOpen={isStudentModalOpen}
-        onClose={() => setIsStudentModalOpen(false)}
-        exam={exam}
-        totalPoints={totalPoints}
-      />
+        {isStudentModalOpen && (
+          <StudentExamModal
+            isOpen={isStudentModalOpen}
+            onClose={() => setIsStudentModalOpen(false)}
+            exam={exam}
+            totalPoints={totalPoints}
+          />
+        )}
 
-      <ExamsManagerModal
-        isOpen={isExamsManagerOpen}
-        onClose={() => setIsExamsManagerOpen(false)}
-        exams={examsList}
-        currentExamId={currentExamId}
-        onSelectExam={handleSelectExam}
-        onCreateNewExam={handleNewBlankExam}
-        onDuplicateExam={handleDuplicateExam}
-        onDeleteExam={handleDeleteExam}
-        onImportExam={handleImportJson}
-        onExportExam={handleExportExam}
-        onLoadTemplate={handleLoadTemplate}
-        currentUser={currentUser}
-        onOpenAuth={() => {
-          setIsExamsManagerOpen(false);
-          setIsAuthModalOpen(true);
-        }}
-        onRestoreSnapshot={handleRestoreSnapshot}
-      />
+        {isExamsManagerOpen && (
+          <ExamsManagerModal
+            isOpen={isExamsManagerOpen}
+            onClose={() => setIsExamsManagerOpen(false)}
+            exams={examsList}
+            currentExamId={currentExamId}
+            onSelectExam={handleSelectExam}
+            onCreateNewExam={handleNewBlankExam}
+            onDuplicateExam={handleDuplicateExam}
+            onDeleteExam={handleDeleteExam}
+            onImportExam={handleImportJson}
+            onExportExam={handleExportExam}
+            onLoadTemplate={handleLoadTemplate}
+            currentUser={currentUser}
+            onOpenAuth={() => {
+              setIsExamsManagerOpen(false);
+              setIsAuthModalOpen(true);
+            }}
+            onRestoreSnapshot={handleRestoreSnapshot}
+          />
+        )}
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccessMessage={(msg) => notify(msg, 4000)}
-      />
+        {isAuthModalOpen && (
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onSuccessMessage={(msg) => notify(msg, 4000)}
+          />
+        )}
+      </React.Suspense>
     </div>
   );
 };
