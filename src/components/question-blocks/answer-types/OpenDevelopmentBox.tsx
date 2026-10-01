@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { MoveVertical, Grid, AlignJustify, Square, CircleDot } from 'lucide-react';
+import { MoveVertical } from 'lucide-react';
 import { DevelopmentBoxStyle, ExamBlock } from '../../../types';
 
 interface OpenDevelopmentBoxProps {
@@ -7,13 +7,6 @@ interface OpenDevelopmentBoxProps {
   isEditor: boolean;
   onUpdateBlock: (updated: Partial<ExamBlock>) => void;
 }
-
-const STYLE_OPTIONS: { id: DevelopmentBoxStyle; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'grid', label: 'Cuadrícula', icon: Grid },
-  { id: 'lines', label: 'Rayado', icon: AlignJustify },
-  { id: 'blank', label: 'Espacio libre', icon: Square },
-  { id: 'dotted', label: 'Punteado', icon: CircleDot },
-];
 
 export const OpenDevelopmentBox: React.FC<OpenDevelopmentBoxProps> = ({
   block,
@@ -57,15 +50,6 @@ export const OpenDevelopmentBox: React.FC<OpenDevelopmentBoxProps> = ({
     window.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleChangeStyle = (newStyle: DevelopmentBoxStyle) => {
-    onUpdateBlock({
-      developmentConfig: {
-        style: newStyle,
-        heightPx: currentHeight,
-      }
-    });
-  };
-
   const renderBackgroundStyle = () => {
     switch (currentStyle) {
       case 'grid':
@@ -74,7 +58,7 @@ export const OpenDevelopmentBox: React.FC<OpenDevelopmentBoxProps> = ({
             linear-gradient(to right, #cbd5e1 1px, transparent 1px),
             linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
           `,
-          backgroundSize: '20px 20px',
+          backgroundSize: '25px 25px', // Cuadrícula un poco más grande y cómoda para escribir
           backgroundColor: '#f8fafc'
         };
       case 'lines':
@@ -99,39 +83,7 @@ export const OpenDevelopmentBox: React.FC<OpenDevelopmentBoxProps> = ({
 
   return (
     <div className="mt-1 flex flex-col">
-      {/* Selector de tipo de espacio (Cuadrícula / Rayado / Espacio libre / Punteado) */}
-      {isEditor && (
-        <div className="flex items-center justify-between pb-1.5 text-[11px] print:hidden select-none">
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-            {STYLE_OPTIONS.map((opt) => {
-              const Icon = opt.icon;
-              const isActive = currentStyle === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => handleChangeStyle(opt.id)}
-                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-indigo-700 shadow-2xs font-bold border border-slate-200/80'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                  title={`Formato: ${opt.label}`}
-                >
-                  <Icon className="w-3 h-3" />
-                  <span className="hidden xs:inline">{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <span className="text-[10px] text-slate-400 font-medium">
-            {currentHeight}px
-          </span>
-        </div>
-      )}
-
-      {/* Caja de Resolución Limpia (sin marcas de agua) */}
+      {/* Caja de Resolución Limpia (sin marcas de agua ni textos residuales) */}
       <div 
         className={`w-full rounded-lg border-2 border-slate-300 relative transition-all overflow-hidden development-grid-box development-grid-${currentStyle}`}
         style={{

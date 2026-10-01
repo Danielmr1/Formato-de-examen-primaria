@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Trash2, AlertTriangle, X } from 'lucide-react';
 import { ChoiceOption, ExamBlock } from '../../../types';
 import { FormattedMathText, hasMathContent } from '../../../utils/mathFormatter';
 import { sanitizeTextLength } from '../../../utils/securitySanitizer';
@@ -32,23 +32,6 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   const canAdd = currentOptions.length < 5;
   const canDelete = currentOptions.length > 2;
 
-  const handleAddOption = () => {
-    if (currentOptions.length >= 5) return;
-    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-    const nextIndex = currentOptions.length;
-    const label = letters[nextIndex] || `${nextIndex + 1}`;
-
-    const newOpt: ChoiceOption = {
-      id: `opt-${Date.now()}-${nextIndex}`,
-      label: label,
-      text: `Alternativa ${label}`,
-    };
-
-    onUpdateBlock({
-      options: [...currentOptions, newOpt]
-    });
-  };
-
   const handleUpdateOption = (optId: string, updated: Partial<ChoiceOption>) => {
     const sanitizedUpdate = { ...updated };
     if (updated.text !== undefined) {
@@ -79,26 +62,6 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
 
   return (
     <div className="mt-1 space-y-1.5">
-      {/* Botón para añadir alternativa con limitador (Mín 2, Máx 5) */}
-      {isEditor && (
-        <div className="flex items-center pb-1 print:hidden">
-          <button
-            type="button"
-            onClick={handleAddOption}
-            disabled={!canAdd}
-            className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border border-dashed flex items-center gap-1 transition-colors ${
-              canAdd
-                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
-                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
-            }`}
-            title={canAdd ? 'Añadir una nueva alternativa' : 'Límite alcanzado: Máximo 5 alternativas (A - E)'}
-          >
-            <Plus className="w-3 h-3" />
-            <span>+ Alternativa {currentOptions.length >= 5 ? '(Máx. 5)' : `(${currentOptions.length}/5)`}</span>
-          </button>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {(block.options || []).map((opt) => (
           <div 

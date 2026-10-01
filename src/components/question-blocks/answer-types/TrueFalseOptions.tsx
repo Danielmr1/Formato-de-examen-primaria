@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { ExamBlock } from '../../../types';
 import { FormattedMathText } from '../../../utils/mathFormatter';
 import { sanitizeTextLength } from '../../../utils/securitySanitizer';
@@ -25,22 +25,7 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
 }) => {
   const current = block.trueFalseOptions || [];
   const maxChars = getMaxCharsForTF(block.width || 12);
-  const canAdd = current.length < 5;
   const canDelete = current.length > 2;
-
-  const handleAddTrueFalse = () => {
-    if (current.length >= 5) return;
-    onUpdateBlock({
-      trueFalseOptions: [
-        ...current,
-        {
-          id: `tf-${Date.now()}-${current.length}`,
-          statement: 'Nueva afirmación para evaluar',
-          isTrue: true
-        }
-      ]
-    });
-  };
 
   const handleUpdateTrueFalse = (tfId: string, statement: string, isTrue: boolean) => {
     const sanitized = sanitizeTextLength(statement, maxChars, 25);
@@ -133,25 +118,6 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
           </div>
         </div>
       ))}
-
-      {isEditor && (
-        <div className="flex justify-start print:hidden">
-          <button
-            type="button"
-            onClick={handleAddTrueFalse}
-            disabled={!canAdd}
-            className={`text-xs font-semibold px-2 py-1 rounded-md border border-dashed flex items-center gap-1 transition-colors ${
-              canAdd
-                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-200 cursor-pointer'
-                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
-            }`}
-            title={canAdd ? 'Añadir afirmación' : 'Límite alcanzado: Máximo 5 afirmaciones'}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Añadir afirmación {current.length >= 5 ? '(Máx. 5)' : `(${current.length}/5)`}</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 };

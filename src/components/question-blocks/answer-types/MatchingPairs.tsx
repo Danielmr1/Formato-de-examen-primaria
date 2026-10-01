@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { ExamBlock } from '../../../types';
 import { FormattedMathText } from '../../../utils/mathFormatter';
 import { sanitizeTextLength } from '../../../utils/securitySanitizer';
@@ -24,22 +24,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
 }) => {
   const pairs = block.matchingPairs || [];
   const maxChars = getMaxCharsForMatching(block.width || 12);
-  const canAdd = pairs.length < 5;
   const canDelete = pairs.length > 2;
-
-  const handleAddPair = () => {
-    if (pairs.length >= 5) return;
-    onUpdateBlock({
-      matchingPairs: [
-        ...pairs,
-        {
-          id: `m-${Date.now()}-${pairs.length}`,
-          leftText: `Concepto ${pairs.length + 1}`,
-          rightText: `Definición ${String.fromCharCode(65 + pairs.length)}`
-        }
-      ]
-    });
-  };
 
   const handleUpdatePair = (pairId: string, updated: { leftText?: string; rightText?: string }) => {
     const sanitizedUpdate: { leftText?: string; rightText?: string } = {};
@@ -134,25 +119,6 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
           ))}
         </div>
       </div>
-
-      {isEditor && (
-        <div className="flex justify-start print:hidden">
-          <button
-            type="button"
-            onClick={handleAddPair}
-            disabled={!canAdd}
-            className={`text-xs font-semibold px-2 py-1 rounded-md border border-dashed flex items-center gap-1 transition-colors ${
-              canAdd
-                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-200 cursor-pointer'
-                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
-            }`}
-            title={canAdd ? 'Añadir par' : 'Límite alcanzado: Máximo 5 parejas'}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Añadir par {pairs.length >= 5 ? '(Máx. 5)' : `(${pairs.length}/5)`}</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 };

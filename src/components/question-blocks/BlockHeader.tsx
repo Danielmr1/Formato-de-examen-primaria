@@ -5,9 +5,14 @@ import {
   ChevronDown, 
   Copy, 
   ImageIcon,
-  MoreVertical
+  MoreVertical,
+  Grid,
+  AlignJustify,
+  Square,
+  CircleDot,
+  Plus
 } from 'lucide-react';
-import { ExamBlock, QuestionType } from '../../types';
+import { ExamBlock, QuestionType, DevelopmentBoxStyle } from '../../types';
 
 interface BlockHeaderProps {
   block: ExamBlock;
@@ -26,9 +31,16 @@ const QUESTION_FORMATS: { id: QuestionType; label: string }[] = [
   { id: 'multiple_choice', label: 'Opción Múltiple' },
   { id: 'true_false', label: 'Verdadero / Falso' },
   { id: 'statement_only', label: 'Solo Enunciado' },
-  { id: 'open_development', label: 'Desarrollo (Rayado/Cuadrícula/Libre)' },
+  { id: 'open_development', label: 'Desarrollo' },
   { id: 'matching', label: 'Relacionar' },
   { id: 'reading_passage', label: 'Lectura (0 pts)' },
+];
+
+const DEV_STYLE_OPTIONS: { id: DevelopmentBoxStyle; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: 'grid', label: 'Cuadrícula', icon: Grid },
+  { id: 'lines', label: 'Rayado', icon: AlignJustify },
+  { id: 'blank', label: 'Espacio libre', icon: Square },
+  { id: 'dotted', label: 'Punteado', icon: CircleDot },
 ];
 
 export const BlockHeader: React.FC<BlockHeaderProps> = ({
@@ -60,6 +72,55 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   }, [showMenu]);
 
   const isCompact = (block.width || 6) <= 5;
+
+  // Añadir alternativa (Opción Múltiple: mín 2, máx 5)
+  const handleAddOption = () => {
+    const currentOptions = block.options || [];
+    if (currentOptions.length >= 5) return;
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const nextIndex = currentOptions.length;
+    const label = letters[nextIndex] || `${nextIndex + 1}`;
+    const newOpt = {
+      id: `opt-${Date.now()}-${nextIndex}`,
+      label: label,
+      text: `Alternativa ${label}`,
+    };
+    onUpdateBlock({
+      options: [...currentOptions, newOpt]
+    });
+  };
+
+  // Añadir afirmación (V/F: mín 2, máx 5)
+  const handleAddTrueFalse = () => {
+    const current = block.trueFalseOptions || [];
+    if (current.length >= 5) return;
+    onUpdateBlock({
+      trueFalseOptions: [
+        ...current,
+        {
+          id: `tf-${Date.now()}-${current.length}`,
+          statement: 'Nueva afirmación para evaluar',
+          isTrue: true
+        }
+      ]
+    });
+  };
+
+  // Añadir par (Relacionar: mín 2, máx 5)
+  const handleAddPair = () => {
+    const pairs = block.matchingPairs || [];
+    if (pairs.length >= 5) return;
+    onUpdateBlock({
+      matchingPairs: [
+        ...pairs,
+        {
+          id: `m-${Date.now()}-${pairs.length}`,
+          leftText: `Elemento ${pairs.length + 1}`,
+          rightText: `Definición ${String.fromCharCode(65 + pairs.length)}`
+        }
+      ]
+    });
+  };
 
   const handleSelectType = (newType: QuestionType) => {
     if (newType === block.type) return;
@@ -138,8 +199,96 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
         </select>
       </div>
 
-      {/* Derecha: Puntos, Figura y Acciones */}
+      {/* Derecha: Opciones de Desarrollo, Puntos, Figura y Acciones */}
       <div className="flex items-center gap-1 shrink-0">
+        {/* En modo normal (> 5 cols): Botones de estilo de fondo justo a la izquierda de Pts */}
+        {block.type === 'open_development' && !isCompact && (
+          <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200" title="Formato del espacio de desarrollo">
+            {DEV_STYLE_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const currentStyle = block.developmentConfig?.style || 'grid';
+              const isActive = currentStyle === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    onUpdateBlock({
+                      developmentConfig: {
+                        style: opt.id,
+                        heightPx: block.developmentConfig?.heightPx || 120
+                      }
+                    });
+                  }}
+                  className={`p-1 rounded transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-white text-indigo-700 shadow-2xs border border-slate-200'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title={opt.label}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Si es Opción Múltiple y NO es compacto: Añadir alternativa */}
+        {block.type === 'multiple_choice' && !isCompact && (
+          <button
+            type="button"
+            onClick={handleAddOption}
+            disabled={(block.options?.length || 0) >= 5}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold border border-dashed transition-all ${
+              (block.options?.length || 0) < 5
+                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
+                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
+            }`}
+            title={(block.options?.length || 0) < 5 ? 'Añadir alternativa' : 'Máximo 5 alternativas permitidas'}
+          >
+            <Plus className="w-3 h-3" />
+            <span>+ Alternativa {(block.options?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.options?.length || 0)}/5)`}</span>
+          </button>
+        )}
+
+        {/* Si es Verdadero / Falso y NO es compacto: Añadir afirmación */}
+        {block.type === 'true_false' && !isCompact && (
+          <button
+            type="button"
+            onClick={handleAddTrueFalse}
+            disabled={(block.trueFalseOptions?.length || 0) >= 5}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold border border-dashed transition-all ${
+              (block.trueFalseOptions?.length || 0) < 5
+                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
+                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
+            }`}
+            title={(block.trueFalseOptions?.length || 0) < 5 ? 'Añadir afirmación' : 'Máximo 5 afirmaciones permitidas'}
+          >
+            <Plus className="w-3 h-3" />
+            <span>+ Afirmación {(block.trueFalseOptions?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.trueFalseOptions?.length || 0)}/5)`}</span>
+          </button>
+        )}
+
+        {/* Si es Relacionar y NO es compacto: Añadir par */}
+        {block.type === 'matching' && !isCompact && (
+          <button
+            type="button"
+            onClick={handleAddPair}
+            disabled={(block.matchingPairs?.length || 0) >= 5}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold border border-dashed transition-all ${
+              (block.matchingPairs?.length || 0) < 5
+                ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
+                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
+            }`}
+            title={(block.matchingPairs?.length || 0) < 5 ? 'Añadir par' : 'Máximo 5 parejas permitidas'}
+          >
+            <Plus className="w-3 h-3" />
+            <span>+ Par {(block.matchingPairs?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.matchingPairs?.length || 0)}/5)`}</span>
+          </button>
+        )}
+
+        {/* Puntos */}
         <div className="flex items-center gap-0.5 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded font-semibold text-[11px]">
           <span>Pts:</span>
           <input
@@ -171,7 +320,103 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in-50">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in-50">
+                {/* Opciones según tipo de pregunta en modo compacto */}
+                {block.type === 'multiple_choice' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAddOption();
+                        setShowMenu(false);
+                      }}
+                      disabled={(block.options?.length || 0) >= 5}
+                      className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>+ Alternativa {(block.options?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.options?.length || 0)}/5)`}</span>
+                    </button>
+                    <div className="border-t border-slate-100 my-1" />
+                  </>
+                )}
+
+                {block.type === 'true_false' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAddTrueFalse();
+                        setShowMenu(false);
+                      }}
+                      disabled={(block.trueFalseOptions?.length || 0) >= 5}
+                      className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>+ Afirmación {(block.trueFalseOptions?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.trueFalseOptions?.length || 0)}/5)`}</span>
+                    </button>
+                    <div className="border-t border-slate-100 my-1" />
+                  </>
+                )}
+
+                {block.type === 'matching' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAddPair();
+                        setShowMenu(false);
+                      }}
+                      disabled={(block.matchingPairs?.length || 0) >= 5}
+                      className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>+ Par {(block.matchingPairs?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.matchingPairs?.length || 0)}/5)`}</span>
+                    </button>
+                    <div className="border-t border-slate-100 my-1" />
+                  </>
+                )}
+                {/* Si la columna es corta (compacto) y es desarrollo: los iconos van aquí en el menú de 3 puntos */}
+                {block.type === 'open_development' && (
+                  <>
+                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Fondo de Respuesta
+                    </div>
+                    <div className="px-2.5 py-1 mb-1">
+                      <div className="flex items-center justify-between bg-slate-100 p-1 rounded-lg border border-slate-200">
+                        {DEV_STYLE_OPTIONS.map((opt) => {
+                          const Icon = opt.icon;
+                          const currentStyle = block.developmentConfig?.style || 'grid';
+                          const isActive = currentStyle === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                onUpdateBlock({
+                                  developmentConfig: {
+                                    style: opt.id,
+                                    heightPx: block.developmentConfig?.heightPx || 120
+                                  }
+                                });
+                                setShowMenu(false);
+                              }}
+                              className={`flex-1 py-1 rounded flex items-center justify-center transition-all cursor-pointer ${
+                                isActive
+                                  ? 'bg-white text-indigo-700 shadow-2xs font-bold border border-slate-200'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              }`}
+                              title={opt.label}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="border-t border-slate-100 my-1" />
+                  </>
+                )}
+
                 {!block.figure && onOpenDiagramModal && (
                   <button
                     type="button"
