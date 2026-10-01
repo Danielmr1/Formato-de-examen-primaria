@@ -60,7 +60,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
   const titleAlignClass = 'text-center';
 
   return (
-    <div className="w-full mb-4 sm:mb-5 text-slate-800 transition-all group relative">
+    <div className="exam-header-block w-full mb-4 sm:mb-5 text-slate-800 transition-all group relative">
       
       {/* Hidden file input for logo */}
       <input

@@ -105,7 +105,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 
   return (
     <div
-      className={`relative group rounded-xl p-3 sm:p-4 transition-all ${
+      className={`exam-block-item relative group rounded-xl p-3 sm:p-4 transition-all ${
         showBorders ? 'border' : 'border border-transparent'
       } ${getBlockThemeClasses()} ${
         isEditor ? 'hover:shadow-md hover:border-indigo-300' : ''
@@ -155,11 +155,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         )}
 
         {/* Statement area */}
-        <div className="flex-1 min-w-0">
+        <div className="exam-statement-area flex-1 min-w-0">
           <div className="flex items-start gap-2">
             {/* Question titleNumber badge in non-editor / print view */}
-            {!isEditor && block.titleNumber && (
-              <span className="font-extrabold text-slate-800 text-sm select-none">
+            {block.titleNumber && (
+              <span className={`font-extrabold text-slate-800 text-sm select-none ${isEditor ? 'hidden print:inline' : 'inline'}`}>
                 {block.titleNumber}.
               </span>
             )}
@@ -292,40 +292,42 @@ export const BlockItem: React.FC<BlockItemProps> = ({
       )}
 
       {/* Dynamic Answer Format Layouts */}
-      {block.type === 'multiple_choice' && (
-        <MultipleChoiceOptions
-          block={block}
-          isEditor={isEditor}
-          isSolutionKey={isSolutionKey}
-          onUpdateBlock={onUpdateBlock}
-          getOptionSizeClass={getOptionSizeClass}
-        />
-      )}
+      <div className="exam-answers-area">
+        {block.type === 'multiple_choice' && (
+          <MultipleChoiceOptions
+            block={block}
+            isEditor={isEditor}
+            isSolutionKey={isSolutionKey}
+            onUpdateBlock={onUpdateBlock}
+            getOptionSizeClass={getOptionSizeClass}
+          />
+        )}
 
-      {block.type === 'true_false' && (
-        <TrueFalseOptions
-          block={block}
-          isEditor={isEditor}
-          isSolutionKey={isSolutionKey}
-          onUpdateBlock={onUpdateBlock}
-        />
-      )}
+        {block.type === 'true_false' && (
+          <TrueFalseOptions
+            block={block}
+            isEditor={isEditor}
+            isSolutionKey={isSolutionKey}
+            onUpdateBlock={onUpdateBlock}
+          />
+        )}
 
-      {block.type === 'open_development' && (
-        <OpenDevelopmentBox
-          block={block}
-          isEditor={isEditor}
-          onUpdateBlock={onUpdateBlock}
-        />
-      )}
+        {block.type === 'open_development' && (
+          <OpenDevelopmentBox
+            block={block}
+            isEditor={isEditor}
+            onUpdateBlock={onUpdateBlock}
+          />
+        )}
 
-      {block.type === 'matching' && (
-        <MatchingPairs
-          block={block}
-          isEditor={isEditor}
-          onUpdateBlock={onUpdateBlock}
-        />
-      )}
+        {block.type === 'matching' && (
+          <MatchingPairs
+            block={block}
+            isEditor={isEditor}
+            onUpdateBlock={onUpdateBlock}
+          />
+        )}
+      </div>
 
       {/* Tirador para ensanchar o reducir con el ratón (de 1 en 1) */}
       {isEditor && (

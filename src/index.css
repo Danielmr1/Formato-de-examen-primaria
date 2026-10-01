@@ -48,14 +48,30 @@
     max-width: 100% !important;
   }
 
-  .grid {
-    gap: 0.65rem !important;
-  }
-
-  .grid > div {
+  /* Control inteligente de saltos de página */
+  .exam-header-block {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-    padding: 0.75rem 0.85rem !important;
+  }
+
+  .exam-block-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-after: auto;
+  }
+
+  /* Evitar que el enunciado quede solo al final de la página */
+  .exam-statement-area {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Evitar que las alternativas, figuras o recuadros se corten */
+  .exam-answers-area,
+  .group\/figure,
+  img {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   img {
