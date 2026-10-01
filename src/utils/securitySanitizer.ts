@@ -22,6 +22,23 @@ export function sanitizeSvg(rawSvg: string): string {
 }
 
 /**
+ * Guardrail de Seguridad y Calidad Tipográfica:
+ * Limita la longitud total y la longitud máxima de palabras continuas sin espacios
+ */
+export function sanitizeTextLength(text: string, maxTotal: number, maxWordLength: number = 25): string {
+  if (!text || typeof text !== 'string') return '';
+  
+  // 1. Limitar longitud total
+  const trimmed = text.slice(0, maxTotal);
+
+  // 2. Limitar palabras continuas sin espacios para evitar desbordes de caja
+  return trimmed
+    .split(/(\s+)/)
+    .map(w => (!/^\s+$/.test(w) && w.length > maxWordLength ? w.slice(0, maxWordLength) : w))
+    .join('');
+}
+
+/**
  * Guardrail de Seguridad: Validación defensiva de esquema de Examen JSON
  * Previene congelamientos o errores fatales si un archivo subido está corrupto o malicioso
  */
@@ -53,7 +70,11 @@ export function validateExamJson(data: any): ValidationResult {
     const sanitizedBlock: ExamBlock = {
       id: typeof b.id === 'string' && b.id ? b.id : `blk-${Date.now()}-${i}`,
       titleNumber: typeof b.titleNumber === 'string' && b.titleNumber.trim() ? b.titleNumber.trim() : `${i + 1}`,
-      statement: typeof b.statement === 'string' ? b.statement : `Pregunta ${i + 1}`,
+      statement: sanitizeTextLength(
+        typeof b.statement === 'string' ? b.statement : `Pregunta ${i + 1}`,
+        b.type === 'reading_passage' ? 2000 : 400,
+        25
+      ),
       type: ['multiple_choice', 'true_false', 'open_development', 'matching', 'figure_only', 'reading_passage'].includes(b.type)
         ? b.type
         : 'multiple_choice',
@@ -82,7 +103,7 @@ export function validateExamJson(data: any): ValidationResult {
       sanitizedBlock.options = b.options.map((opt: any, oIdx: number) => ({
         id: typeof opt.id === 'string' ? opt.id : `opt-${oIdx}`,
         label: typeof opt.label === 'string' ? opt.label : String.fromCharCode(65 + oIdx),
-        text: typeof opt.text === 'string' ? opt.text : '',
+        text: sanitizeTextLength(typeof opt.text === 'string' ? opt.text : '', 160, 25),
         isCorrect: Boolean(opt.isCorrect)
       }));
     }
@@ -91,7 +112,7 @@ export function validateExamJson(data: any): ValidationResult {
     if (Array.isArray(b.trueFalseOptions)) {
       sanitizedBlock.trueFalseOptions = b.trueFalseOptions.map((tf: any, tIdx: number) => ({
         id: typeof tf.id === 'string' ? tf.id : `tf-${tIdx}`,
-        statement: typeof tf.statement === 'string' ? tf.statement : '',
+        statement: sanitizeTextLength(typeof tf.statement === 'string' ? tf.statement : '', 200, 25),
         isTrue: Boolean(tf.isTrue)
       }));
     }
@@ -109,8 +130,8 @@ export function validateExamJson(data: any): ValidationResult {
     if (Array.isArray(b.matchingPairs)) {
       sanitizedBlock.matchingPairs = b.matchingPairs.map((m: any, mIdx: number) => ({
         id: typeof m.id === 'string' ? m.id : `m-${mIdx}`,
-        leftText: typeof m.leftText === 'string' ? m.leftText : '',
-        rightText: typeof m.rightText === 'string' ? m.rightText : ''
+        leftText: sanitizeTextLength(typeof m.leftText === 'string' ? m.leftText : '', 180, 20),
+        rightText: sanitizeTextLength(typeof m.rightText === 'string' ? m.rightText : '', 180, 20)
       }));
     }
 

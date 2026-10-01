@@ -2,6 +2,14 @@ import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ExamBlock } from '../../../types';
 import { FormattedMathText } from '../../../utils/mathFormatter';
+import { sanitizeTextLength } from '../../../utils/securitySanitizer';
+
+// Límites según columnas de ancho para evitar desborde
+const getMaxCharsForMatching = (cols: number = 12) => {
+  if (cols <= 4) return 40;
+  if (cols <= 6) return 80;
+  return 180;
+};
 
 interface MatchingPairsProps {
   block: ExamBlock;
@@ -15,6 +23,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   onUpdateBlock
 }) => {
   const pairs = block.matchingPairs || [];
+  const maxChars = getMaxCharsForMatching(block.width || 12);
 
   const handleAddPair = () => {
     onUpdateBlock({
@@ -30,8 +39,15 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   };
 
   const handleUpdatePair = (pairId: string, updated: { leftText?: string; rightText?: string }) => {
+    const sanitizedUpdate: { leftText?: string; rightText?: string } = {};
+    if (updated.leftText !== undefined) {
+      sanitizedUpdate.leftText = sanitizeTextLength(updated.leftText, maxChars, 20);
+    }
+    if (updated.rightText !== undefined) {
+      sanitizedUpdate.rightText = sanitizeTextLength(updated.rightText, maxChars, 20);
+    }
     onUpdateBlock({
-      matchingPairs: pairs.map(p => p.id === pairId ? { ...p, ...updated } : p)
+      matchingPairs: pairs.map(p => p.id === pairId ? { ...p, ...sanitizedUpdate } : p)
     });
   };
 
@@ -47,7 +63,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
         {/* Left Column (Numbered) */}
         <div className="space-y-2">
           {pairs.map((p, idx) => (
-            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs break-words overflow-hidden">
               <span className="matching-pair-badge w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0">
                 {idx + 1}
               </span>
@@ -55,12 +71,14 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                 <input
                   type="text"
                   value={p.leftText}
+                  maxLength={maxChars}
                   onChange={(e) => handleUpdatePair(p.id, { leftText: e.target.value })}
                   placeholder="Elemento columna izquierda..."
-                  className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs"
+                  className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs truncate focus:overflow-visible"
+                  title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
                 />
               ) : (
-                <span className="flex-1">
+                <span className="flex-1 break-words overflow-hidden">
                   <FormattedMathText text={p.leftText} />
                 </span>
               )}
@@ -71,7 +89,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
         {/* Right Column (Lettered with parenthesis) */}
         <div className="space-y-2">
           {pairs.map((p, idx) => (
-            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs break-words overflow-hidden">
               <span className="matching-paren-box px-1.5 py-0.5 rounded font-bold text-slate-500 text-xs border border-dashed border-slate-300 shrink-0">
                 ( &nbsp; )
               </span>
@@ -83,9 +101,11 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                   <input
                     type="text"
                     value={p.rightText}
+                    maxLength={maxChars}
                     onChange={(e) => handleUpdatePair(p.id, { rightText: e.target.value })}
                     placeholder="Elemento columna derecha..."
-                    className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs"
+                    className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs truncate focus:overflow-visible"
+                    title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
                   />
                   <button
                     type="button"
@@ -97,7 +117,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                   </button>
                 </>
               ) : (
-                <span className="flex-1">
+                <span className="flex-1 break-words overflow-hidden">
                   <FormattedMathText text={p.rightText} />
                 </span>
               )}

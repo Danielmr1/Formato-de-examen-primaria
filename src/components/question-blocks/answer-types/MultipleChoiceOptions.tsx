@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Plus, Trash2, AlertTriangle, X } from 'lucide-react';
 import { ChoiceOption, ExamBlock } from '../../../types';
 import { FormattedMathText, hasMathContent } from '../../../utils/mathFormatter';
+import { sanitizeTextLength } from '../../../utils/securitySanitizer';
+
+// Límites según columnas de ancho para evitar desborde
+const getMaxCharsForOption = (cols: number = 12) => {
+  if (cols <= 4) return 50;
+  if (cols <= 6) return 90;
+  return 160;
+};
 
 interface MultipleChoiceOptionsProps {
   block: ExamBlock;
@@ -19,6 +27,7 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   getOptionSizeClass
 }) => {
   const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
+  const maxChars = getMaxCharsForOption(block.width || 12);
 
   const handleAddOption = () => {
     const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -39,8 +48,12 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
 
   const handleUpdateOption = (optId: string, updated: Partial<ChoiceOption>) => {
     const currentOptions = block.options || [];
+    const sanitizedUpdate = { ...updated };
+    if (updated.text !== undefined) {
+      sanitizedUpdate.text = sanitizeTextLength(updated.text, maxChars, 25);
+    }
     onUpdateBlock({
-      options: currentOptions.map(o => o.id === optId ? { ...o, ...updated } : o)
+      options: currentOptions.map(o => o.id === optId ? { ...o, ...sanitizedUpdate } : o)
     });
   };
 
@@ -125,28 +138,30 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
                       <FormattedMathText text={opt.text} />
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
                       <input
                         type="text"
                         data-block-id={block.id}
                         data-opt-id={opt.id}
                         value={opt.text}
+                        maxLength={maxChars}
                         onChange={(e) => handleUpdateOption(opt.id, { text: e.target.value })}
                         onFocus={() => setFocusedOptionId(opt.id)}
                         onBlur={() => setTimeout(() => setFocusedOptionId(null), 150)}
                         placeholder="Texto de la alternativa..."
-                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden text-xs py-0.5"
+                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden text-xs py-0.5 truncate focus:overflow-visible"
+                        title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 25 letras)`}
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="flex-1 hidden print:block text-xs">
+                <div className="flex-1 hidden print:block text-xs break-words overflow-hidden">
                   <FormattedMathText text={opt.text} />
                 </div>
               </>
             ) : (
-              <span className="flex-1 text-xs">
+              <span className="flex-1 text-xs break-words overflow-hidden">
                 <FormattedMathText text={opt.text} />
               </span>
             )}
