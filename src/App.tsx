@@ -70,19 +70,111 @@ export const App: React.FC = () => {
   const [isExamsManagerOpen, setIsExamsManagerOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Guardrail de navegación: Advertir antes de cerrar o recargar si hay guardado en curso
+  // Guardrail contra cierres accidentales: Guarda inmediatamente y previene pérdida de datos
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // 1. Guardado de emergencia inmediato y síncrono en localStorage
+      try {
+        localStorage.setItem('docu_current_exam', JSON.stringify(exam));
+      } catch {}
+
+      // 2. Si se está sincronizando en la nube o hay preguntas activas, advertir antes de salir
       if (isCloudSaving || cloudSyncStatus === 'saving') {
         e.preventDefault();
         e.returnValue = 'Tienes cambios guardándose en la nube. ¿Seguro que deseas salir?';
         return e.returnValue;
       }
+
+      if (exam.blocks && exam.blocks.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isCloudSaving, cloudSyncStatus]);
+  }, [exam, isCloudSaving, cloudSyncStatus]);
+
+  // Atajos de teclado para redacción y edición fluida (Mejora 4)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      const isAnyModalOpen = isDiagramModalOpen || isStudentModalOpen || isExamsManagerOpen || isAuthModalOpen;
+
+      // Escape: Cerrar cualquier modal que esté en pantalla
+      if (e.key === 'Escape') {
+        if (isAnyModalOpen) {
+          setIsDiagramModalOpen(false);
+          setIsStudentModalOpen(false);
+          setIsExamsManagerOpen(false);
+          setIsAuthModalOpen(false);
+          setTargetBlockIdForFigure(null);
+        }
+        return;
+      }
+
+      // Si hay un modal abierto, no ejecutar atajos de edición de fondo
+      if (isAnyModalOpen) return;
+
+      // Ctrl + S: Guardar examen manualmente con confirmación
+      if (cmdOrCtrl && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        try {
+          localStorage.setItem('docu_current_exam', JSON.stringify(exam));
+          if (currentUser) {
+            manualSaveCloud(exam);
+          } else {
+            notify('✓ Examen guardado en tu navegador');
+          }
+        } catch {
+          notify('✓ Examen guardado');
+        }
+        return;
+      }
+
+      // Ctrl + Enter: Añadir nueva pregunta al instante
+      if (cmdOrCtrl && e.key === 'Enter') {
+        e.preventDefault();
+        handleAddBlock(6, 'multiple_choice', false);
+        notify('✓ Nueva pregunta añadida (Ctrl + Enter)');
+        return;
+      }
+
+      // Ctrl + P: Imprimir o generar PDF directo
+      if (cmdOrCtrl && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        window.print();
+        return;
+      }
+
+      // Ctrl + Z: Deshacer eliminación de pregunta si hay acción pendiente fuera de inputs
+      const isTyping = document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'INPUT';
+      if (cmdOrCtrl && (e.key === 'z' || e.key === 'Z') && !e.shiftKey && !isTyping) {
+        if (undoItem) {
+          e.preventDefault();
+          undoItem.onUndo();
+          setUndoItem(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    exam,
+    currentUser,
+    undoItem,
+    isDiagramModalOpen,
+    isStudentModalOpen,
+    isExamsManagerOpen,
+    isAuthModalOpen,
+    manualSaveCloud,
+    notify,
+    handleAddBlock,
+    setUndoItem
+  ]);
 
   // Selección de diagrama desde la biblioteca modal
   const handleSelectDiagramForBlock = (figure: FigureData) => {

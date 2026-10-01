@@ -129,6 +129,24 @@ export function useExamState() {
     }, duration);
   }, []);
 
+  // Resiliencia contra cierres accidentales: notificar al docente que su examen previo se restauró intacto
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('docu_current_exam');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.blocks) && parsed.blocks.length > 0) {
+          const title = parsed.title || 'Borrador';
+          const count = parsed.blocks.length;
+          const timer = setTimeout(() => {
+            notify(`✓ Restauramos tu último examen en curso: "${title}" (${count} ${count === 1 ? 'pregunta' : 'preguntas'})`, 4000);
+          }, 800);
+          return () => clearTimeout(timer);
+        }
+      }
+    } catch {}
+  }, []);
+
   // Total points calculation
   const totalPoints = useMemo(() => {
     return exam.blocks.reduce((sum, b) => sum + (b.points || 0), 0);

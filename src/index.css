@@ -24,7 +24,7 @@
   .print\:hidden,
   header,
   nav,
-  button,
+  button:not(.option-badge-print):not(.tf-badge-print),
   select,
   input[type="range"],
   .no-print {
@@ -58,6 +58,11 @@
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     page-break-after: auto;
+    background-color: #ffffff !important;
+  }
+
+  .exam-block-item.border-2 {
+    border-color: #000000 !important;
   }
 
   /* Evitar que el enunciado quede solo al final de la página */
@@ -77,6 +82,101 @@
   img {
     max-width: 100% !important;
     height: auto !important;
+  }
+
+  /* ========================================================
+     OPTIMIZACIÓN PARA FOTOCOPIADORAS ESCOLARES (BLANCO Y NEGRO)
+     ======================================================== */
+
+  /* Textos y encabezados en negro sólido de máximo contraste */
+  .exam-block-item,
+  .exam-header-block,
+  .exam-statement-area,
+  .exam-answers-area {
+    color: #000000 !important;
+  }
+
+  /* Tarjetas de alternativas limpias sin fondos grises que ensucien el tóner */
+  .choice-option-card,
+  .matching-pair-card,
+  .tf-option-card {
+    background-color: #ffffff !important;
+    border-color: #64748b !important;
+    color: #000000 !important;
+  }
+
+  /* Burbujas circulares de opción A, B, C, D con trazo negro nítido */
+  .option-badge-print,
+  .tf-badge-print {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1.5px solid #000000 !important;
+    box-shadow: none !important;
+    font-weight: 800 !important;
+  }
+
+  /* Clave de respuestas: círculo sólido negro relleno para lectura instantánea */
+  .option-badge-print.solution-correct,
+  .tf-badge-print.solution-correct {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #000000 !important;
+  }
+
+  /* Badges de columnas de emparejamiento */
+  .matching-pair-badge {
+    background-color: #ffffff !important;
+    border: 1.5px solid #000000 !important;
+    color: #000000 !important;
+  }
+
+  .matching-paren-box {
+    border-color: #000000 !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Cuadros de resolución / desarrollo con cuadrícula y líneas de contraste calibrado */
+  .development-grid-box {
+    border: 1.5px solid #000000 !important;
+    background-color: #ffffff !important;
+  }
+
+  .development-grid-box.development-grid-grid {
+    background-image: 
+      linear-gradient(to right, #475569 1px, transparent 1px),
+      linear-gradient(to bottom, #475569 1px, transparent 1px) !important;
+    background-size: 20px 20px !important;
+    background-color: #ffffff !important;
+  }
+
+  .development-grid-box.development-grid-lines {
+    background-image: linear-gradient(to bottom, transparent 27px, #475569 1px) !important;
+    background-size: 100% 28px !important;
+    background-color: #ffffff !important;
+  }
+
+  .development-grid-box.development-grid-dotted {
+    background-image: radial-gradient(#334155 1.5px, transparent 1.5px) !important;
+    background-size: 18px 18px !important;
+    background-color: #ffffff !important;
+  }
+
+  .development-grid-box.development-grid-blank {
+    background-image: none !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Trazos de diagramas geométricos y gráficos vectoriales siempre opacos y nítidos */
+  .exam-block-item svg path,
+  .exam-block-item svg line,
+  .exam-block-item svg circle,
+  .exam-block-item svg rect,
+  .exam-block-item svg polygon {
+    stroke-opacity: 1 !important;
   }
 }
 

@@ -85,7 +85,7 @@ export const OpenDevelopmentBox: React.FC<OpenDevelopmentBoxProps> = ({
   return (
     <div className="mt-1 flex flex-col">
       <div 
-        className="w-full rounded-lg border-2 border-slate-300 relative transition-all overflow-hidden"
+        className={`w-full rounded-lg border-2 border-slate-300 relative transition-all overflow-hidden development-grid-box development-grid-${currentStyle}`}
         style={{
           height: `${currentHeight}px`,
           ...renderBackgroundStyle()

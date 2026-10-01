@@ -84,7 +84,7 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
         {(block.options || []).map((opt) => (
           <div 
             key={opt.id}
-            className={`flex items-center gap-2 p-1.5 rounded-lg border ${getOptionSizeClass()} transition-colors ${
+            className={`flex items-center gap-2 p-1.5 rounded-lg border choice-option-card ${getOptionSizeClass()} transition-colors ${
               isSolutionKey && opt.isCorrect
                 ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-bold'
                 : 'bg-slate-50/50 border-slate-200 text-slate-800'
@@ -94,7 +94,9 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
             <button
               type="button"
               onClick={() => isEditor && handleSetCorrectOption(opt.id)}
-              className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all ${
+              className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all option-badge-print ${
+                isSolutionKey && opt.isCorrect ? 'solution-correct ' : ''
+              }${
                 opt.isCorrect && (isSolutionKey || isEditor)
                   ? 'bg-emerald-600 text-white shadow-2xs'
                   : 'border border-slate-300 bg-white text-slate-700 hover:border-indigo-500'

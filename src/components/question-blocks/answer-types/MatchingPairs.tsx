@@ -47,8 +47,8 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
         {/* Left Column (Numbered) */}
         <div className="space-y-2">
           {pairs.map((p, idx) => (
-            <div key={p.id} className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
-              <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0">
+            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+              <span className="matching-pair-badge w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0">
                 {idx + 1}
               </span>
               {isEditor ? (
@@ -71,8 +71,8 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
         {/* Right Column (Lettered with parenthesis) */}
         <div className="space-y-2">
           {pairs.map((p, idx) => (
-            <div key={p.id} className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
-              <span className="px-1.5 py-0.5 rounded font-bold text-slate-500 text-xs border border-dashed border-slate-300 shrink-0">
+            <div key={p.id} className="matching-pair-card flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+              <span className="matching-paren-box px-1.5 py-0.5 rounded font-bold text-slate-500 text-xs border border-dashed border-slate-300 shrink-0">
                 ( &nbsp; )
               </span>
               <span className="font-bold text-slate-700 text-xs shrink-0">

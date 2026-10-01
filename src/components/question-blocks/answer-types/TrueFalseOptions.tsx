@@ -49,7 +49,7 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
       {(block.trueFalseOptions || []).map((tf) => (
         <div 
           key={tf.id}
-          className="flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-lg border border-slate-200 text-xs"
+          className="tf-option-card flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-lg border border-slate-200 text-xs"
         >
           {isEditor ? (
             <>
@@ -74,7 +74,9 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
             <button
               type="button"
               onClick={() => isEditor && handleUpdateTrueFalse(tf.id, tf.statement, true)}
-              className={`w-7 h-6 rounded flex items-center justify-center font-bold text-xs border cursor-pointer transition-colors ${
+              className={`w-7 h-6 rounded flex items-center justify-center font-bold text-xs border cursor-pointer transition-colors tf-badge-print ${
+                isSolutionKey && tf.isTrue ? 'solution-correct ' : ''
+              }${
                 (isSolutionKey || isEditor) && tf.isTrue
                   ? 'bg-emerald-600 text-white border-emerald-600'
                   : 'bg-white border-slate-300 text-slate-700'
@@ -86,7 +88,9 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
             <button
               type="button"
               onClick={() => isEditor && handleUpdateTrueFalse(tf.id, tf.statement, false)}
-              className={`w-7 h-6 rounded flex items-center justify-center font-bold text-xs border cursor-pointer transition-colors ${
+              className={`w-7 h-6 rounded flex items-center justify-center font-bold text-xs border cursor-pointer transition-colors tf-badge-print ${
+                isSolutionKey && !tf.isTrue ? 'solution-correct ' : ''
+              }${
                 (isSolutionKey || isEditor) && !tf.isTrue
                   ? 'bg-rose-600 text-white border-rose-600'
                   : 'bg-white border-slate-300 text-slate-700'
