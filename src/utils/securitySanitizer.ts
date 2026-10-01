@@ -52,12 +52,14 @@ export function validateExamJson(data: any): ValidationResult {
 
     const sanitizedBlock: ExamBlock = {
       id: typeof b.id === 'string' && b.id ? b.id : `blk-${Date.now()}-${i}`,
-      titleNumber: typeof b.titleNumber === 'string' ? b.titleNumber : `${i + 1}`,
-      statement: typeof b.statement === 'string' ? b.statement : 'Pregunta sin enunciado',
+      titleNumber: typeof b.titleNumber === 'string' && b.titleNumber.trim() ? b.titleNumber.trim() : `${i + 1}`,
+      statement: typeof b.statement === 'string' ? b.statement : `Pregunta ${i + 1}`,
       type: ['multiple_choice', 'true_false', 'open_development', 'matching', 'figure_only', 'reading_passage'].includes(b.type)
         ? b.type
         : 'multiple_choice',
-      width: (typeof b.width === 'number' && b.width >= 4 && b.width <= 12) ? (b.width as any) : 12,
+      width: (typeof b.width === 'number' && !isNaN(b.width))
+        ? (Math.max(4, Math.min(12, Math.round(b.width))) as any)
+        : 12,
       heightMode: ['auto', 'compact', 'tall'].includes(b.heightMode) ? b.heightMode : 'auto',
       points: typeof b.points === 'number' && !isNaN(b.points) ? Math.max(0, b.points) : 2,
       blockTheme: ['standard', 'accent', 'highlight', 'minimal', 'dashed'].includes(b.blockTheme) ? b.blockTheme : 'standard',
@@ -134,7 +136,7 @@ export function validateExamJson(data: any): ValidationResult {
       showScoreBox: data.header.showScoreBox !== false,
       generalInstructions: typeof data.header.generalInstructions === 'string' ? data.header.generalInstructions : '',
       scoreBoxSize: ['compact', 'large'].includes(data.header.scoreBoxSize) ? data.header.scoreBoxSize : 'large',
-      titleAlignment: ['left', 'center'].includes(data.header.titleAlignment) ? data.header.titleAlignment : 'left',
+      titleAlignment: 'center',
       logoUrl: typeof data.header.logoUrl === 'string' ? data.header.logoUrl : ''
     },
     settings: {
@@ -145,7 +147,7 @@ export function validateExamJson(data: any): ValidationResult {
       showPointsInPrint: data.settings?.showPointsInPrint !== false,
       showBorders: data.settings?.showBorders !== false,
       twoColumnLayout: Boolean(data.settings?.twoColumnLayout),
-      statementJustify: data.settings?.statementJustify !== false,
+      statementJustify: true,
       lineSpacing: ['compact', 'normal', 'relaxed'].includes(data.settings?.lineSpacing) ? data.settings.lineSpacing : 'normal'
     },
     blocks: validBlocks

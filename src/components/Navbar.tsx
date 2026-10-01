@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v3.0
+              v3.2
             </span>
           </div>
           
@@ -176,13 +176,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Missing Keys Alert */}
           {questionsWithoutKeyCount > 0 && (
-            <div 
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs"
-              title={`${questionsWithoutKeyCount} pregunta(s) de opción múltiple no tienen la alternativa correcta marcada`}
+            <button 
+              type="button"
+              onClick={() => setActiveView('solution_key')}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs cursor-pointer transition-colors"
+              title={`${questionsWithoutKeyCount} pregunta(s) de opción múltiple no tienen la alternativa correcta marcada. Haz clic para revisar en la Clave Docente.`}
             >
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span className="text-[11px]">{questionsWithoutKeyCount} sin clave</span>
-            </div>
+            </button>
           )}
         </div>
 
@@ -307,6 +309,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onChange={(e) => {
                       onImportJson(e);
                       setShowExportMenu(false);
+                      e.target.value = '';
                     }}
                     className="hidden"
                   />

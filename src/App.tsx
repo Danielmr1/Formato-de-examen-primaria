@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FigureData, 
   ExamDocument 
@@ -69,6 +69,8 @@ export const App: React.FC = () => {
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isExamsManagerOpen, setIsExamsManagerOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const lastAddBlockTimeRef = useRef(0);
+  const lastManualSaveTimeRef = useRef(0);
 
   // Guardrail contra cierres accidentales: Guarda inmediatamente y previene pérdida de datos
   useEffect(() => {
@@ -96,9 +98,20 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [exam, isCloudSaving, cloudSyncStatus]);
 
-  // Atajos de teclado para redacción y edición fluida (Mejora 4)
+  // Guardrail 4: Auditoría de clave docente previa a la impresión
+  const handlePrintExam = () => {
+    if (activeView === 'solution_key' && questionsWithoutKeyCount > 0) {
+      notify(`⚠️ Clave incompleta: Hay ${questionsWithoutKeyCount} pregunta(s) de opción múltiple sin respuesta correcta marcada. Revisa antes de imprimir la pauta.`, 5000);
+    }
+    window.print();
+  };
+
+  // Atajos de teclado para redacción y edición fluida (Mejora 4 & Guardrail 3)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Guardrail 3: Ignorar repeticiones continuas del SO si se mantiene la tecla presionada
+      if (e.repeat) return;
+
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
       const isAnyModalOpen = isDiagramModalOpen || isStudentModalOpen || isExamsManagerOpen || isAuthModalOpen;
@@ -118,9 +131,13 @@ export const App: React.FC = () => {
       // Si hay un modal abierto, no ejecutar atajos de edición de fondo
       if (isAnyModalOpen) return;
 
-      // Ctrl + S: Guardar examen manualmente con confirmación
+      // Ctrl + S: Guardar examen manualmente con confirmación y debouncing
       if (cmdOrCtrl && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
+        const now = Date.now();
+        if (now - lastManualSaveTimeRef.current < 500) return;
+        lastManualSaveTimeRef.current = now;
+
         try {
           localStorage.setItem('docu_current_exam', JSON.stringify(exam));
           if (currentUser) {
@@ -134,18 +151,22 @@ export const App: React.FC = () => {
         return;
       }
 
-      // Ctrl + Enter: Añadir nueva pregunta al instante
+      // Ctrl + Enter: Añadir nueva pregunta con anti-rebote (máximo 1 cada 400ms)
       if (cmdOrCtrl && e.key === 'Enter') {
         e.preventDefault();
+        const now = Date.now();
+        if (now - lastAddBlockTimeRef.current < 400) return;
+        lastAddBlockTimeRef.current = now;
+
         handleAddBlock(6, 'multiple_choice', false);
         notify('✓ Nueva pregunta añadida (Ctrl + Enter)');
         return;
       }
 
-      // Ctrl + P: Imprimir o generar PDF directo
+      // Ctrl + P: Imprimir o generar PDF directo con auditoría de clave (Guardrail 4)
       if (cmdOrCtrl && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
-        window.print();
+        handlePrintExam();
         return;
       }
 
@@ -222,10 +243,17 @@ export const App: React.FC = () => {
     downloadAnchor.remove();
   };
 
-  // Importar examen desde archivo JSON con guardrail de validación
+  // Importar examen desde archivo JSON con guardrail de validación y límite de tamaño
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Guardrail 1: Límite de tamaño de archivo (máximo 5 MB para prevenir saturación de memoria)
+      const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        notify('❌ Archivo demasiado grande: El límite de seguridad para archivos .json es de 5 MB', 5000);
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
@@ -282,7 +310,7 @@ export const App: React.FC = () => {
         }}
         onLoadTemplate={handleLoadTemplate}
         onNewBlankExam={handleNewBlankExam}
-        onPrint={() => window.print()}
+        onPrint={handlePrintExam}
         onExportJson={() => handleExportExam(exam)}
         onImportJson={handleImportJson}
         totalPoints={totalPoints}
@@ -336,6 +364,7 @@ export const App: React.FC = () => {
           onResizeWidthPair={handleResizeWidthPair}
           onOpenFigureModalForBlock={handleOpenFigureModalForBlock}
           onAddBlock={handleAddBlock}
+          onUpdateSettings={handleUpdateSettings}
         />
       </main>
 

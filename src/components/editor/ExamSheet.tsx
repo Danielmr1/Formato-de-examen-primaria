@@ -9,7 +9,8 @@ import {
   Plus,
   FileText,
   Grid,
-  CheckSquare
+  CheckSquare,
+  AlertTriangle
 } from 'lucide-react';
 import { BlockWidth, ExamBlock, ExamDocument, QuestionType } from '../../types';
 import { HeaderEditor } from '../HeaderEditor';
@@ -29,6 +30,7 @@ interface ExamSheetProps {
   onResizeWidthPair: (leftBlockId: string, rightBlockId: string, newLeftWidth: number, newRightWidth: number) => void;
   onOpenFigureModalForBlock: (blockId: string) => void;
   onAddBlock: (width?: BlockWidth, type?: QuestionType, withFigure?: boolean) => void;
+  onUpdateSettings?: (settings: Partial<ExamDocument['settings']>) => void;
 }
 
 export const ExamSheet: React.FC<ExamSheetProps> = ({
@@ -43,7 +45,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   onMoveDown,
   onResizeWidthPair,
   onOpenFigureModalForBlock,
-  onAddBlock
+  onAddBlock,
+  onUpdateSettings
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [sheetHeight, setSheetHeight] = useState<number>(0);
@@ -78,6 +81,12 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
     observer.observe(sheetRef.current);
     return () => observer.disconnect();
   }, [exam.blocks, exam.header, exam.settings]);
+
+  // Guardrail 2: Detección inteligente de páginas A4 y prevención de hojas fantasma
+  const A4_PAGE_HEIGHT_PX = 1050;
+  const estimatedPages = Math.max(1, Math.ceil(sheetHeight / A4_PAGE_HEIGHT_PX));
+  const remainderPx = sheetHeight % A4_PAGE_HEIGHT_PX;
+  const isGhostPageRisk = sheetHeight > 0 && estimatedPages > 1 && remainderPx > 0 && remainderPx < 160;
 
   return (
     <div 
@@ -217,6 +226,29 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
           return null;
         })}
       </div>
+
+      {/* Guardrail 2: Alerta de riesgo de hoja fantasma / desborde mínimo */}
+      {isGhostPageRisk && activeView !== 'student' && (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-900 print:hidden shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div>
+              <span className="font-bold">Aviso de impresión (Hoja extra detectada): </span>
+              <span>El examen se pasa a la página {estimatedPages} por muy poco contenido ({Math.round(remainderPx)}px).</span>
+            </div>
+          </div>
+          {onUpdateSettings && exam.settings.lineSpacing !== 'compact' && (
+            <button
+              type="button"
+              onClick={() => onUpdateSettings({ lineSpacing: 'compact' })}
+              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition-colors shrink-0 shadow-2xs cursor-pointer"
+              title="Ajustar interlineado a compacto para que quepa en menos páginas"
+            >
+              Ajustar a {estimatedPages - 1} página{estimatedPages - 1 > 1 ? 's' : ''}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Empty State / Limpio sin botones duplicados */}
       {exam.blocks.length === 0 && (
