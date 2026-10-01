@@ -51,7 +51,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   onPagesCalculated
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [sheetHeight, setSheetHeight] = useState<number>(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState<number>(0);
 
   // Helper para asignar columnas de ancho en CSS grid de 12
   const getColSpanClassSafe = (cols: number) => {
@@ -72,23 +73,24 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
     }
   };
 
-  // Medir altura física de la hoja para advertir desborde de página
+  // Medir la altura física real de las preguntas y encabezado (sin la altura forzada de la hoja)
   useEffect(() => {
-    if (!sheetRef.current) return;
+    if (!contentRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setSheetHeight(entry.contentRect.height);
+        setContentHeight(entry.contentRect.height);
       }
     });
-    observer.observe(sheetRef.current);
+    observer.observe(contentRef.current);
     return () => observer.disconnect();
   }, [exam.blocks, exam.header, exam.settings]);
 
   // Guardrail 2: Detección inteligente de páginas A4 y prevención de hojas fantasma
   const A4_PAGE_HEIGHT_PX = 1050;
-  const estimatedPages = Math.max(1, Math.ceil(sheetHeight / A4_PAGE_HEIGHT_PX));
-  const remainderPx = sheetHeight % A4_PAGE_HEIGHT_PX;
-  const isGhostPageRisk = sheetHeight > 0 && estimatedPages > 1 && remainderPx > 0 && remainderPx < 160;
+  const estimatedPages = Math.max(1, Math.ceil(contentHeight / A4_PAGE_HEIGHT_PX));
+  const remainderPx = contentHeight % A4_PAGE_HEIGHT_PX;
+  // Solo hay riesgo de desborde si el contenido supera 1 página completa Y el sobrante es pequeño (< 160px)
+  const isGhostPageRisk = contentHeight > A4_PAGE_HEIGHT_PX && remainderPx > 0 && remainderPx < 160;
 
   useEffect(() => {
     if (onPagesCalculated) {
@@ -141,16 +143,18 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         </div>
       )}
 
-      {/* Institutional Header */}
-      <HeaderEditor
-        header={exam.header}
-        onUpdateHeader={onUpdateHeader}
-        isPrintMode={activeView === 'preview_a4'}
-        totalScore={totalPoints}
-      />
+      {/* Contenedor medido del contenido real de preguntas y encabezado */}
+      <div ref={contentRef} className="w-full flex flex-col">
+        {/* Institutional Header */}
+        <HeaderEditor
+          header={exam.header}
+          onUpdateHeader={onUpdateHeader}
+          isPrintMode={activeView === 'preview_a4'}
+          totalScore={totalPoints}
+        />
 
-      {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
-      <div className="flex flex-col gap-3.5 sm:gap-4.5">
+        {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
+        <div className="flex flex-col gap-3.5 sm:gap-4.5">
         {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
           if (segment.type === 'full' && segment.fullBlock) {
             const { block, index: idx } = segment.fullBlock;
@@ -258,6 +262,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
 
           return null;
         })}
+      </div>
       </div>
 
       {/* Guardrail 2: Alerta de riesgo de hoja fantasma / desborde mínimo */}
