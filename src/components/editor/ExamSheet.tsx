@@ -346,6 +346,24 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         </div>
       )}
 
+      {/* Línea guía tenue de fin de página en Modo Edición (sutil, sin textos ni insignias) */}
+      {activeView === 'editor' && estimatedPages > 1 && (
+        <div className="pointer-events-none select-none print:hidden">
+          {Array.from({ length: estimatedPages - 1 }).map((_, i) => {
+            const pageNum = i + 1;
+            return (
+              <div 
+                key={`editor-page-break-${pageNum}`}
+                className="absolute inset-x-0 z-10 pointer-events-none"
+                style={{ top: `${pageNum * targetPageHeightPx}px` }}
+              >
+                <div className="w-full border-b border-dashed border-slate-300/80" />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Header Banner Mode Indicator in Solution Mode */}
       {activeView === 'solution_key' && (
         <div className="mb-4 p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-emerald-900 flex items-center justify-between text-xs print:hidden">
@@ -361,14 +379,6 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
       {is2in1 ? (
         activeView === 'editor' ? (
           <>
-            <div className="mb-3 px-3 py-1.5 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center justify-between shadow-2xs select-none print:hidden">
-              <span className="font-semibold">
-                📄 Modo A5 (2 exámenes por hoja A4): Aquí editas tu prueba en media hoja. Al previsualizar o imprimir se duplicará lado a lado de forma 100% idéntica.
-              </span>
-              <span className="text-[10px] font-extrabold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded">
-                Ahorro 50%
-              </span>
-            </div>
             {/* Vista edición en pantalla: solo una columna interactiva */}
             <div className="print:hidden w-full">{renderExamBody({ isInteractive: true })}</div>
             {/* Vista impresión directa desde editor: dos columnas 100% sincronizadas e idénticas */}
