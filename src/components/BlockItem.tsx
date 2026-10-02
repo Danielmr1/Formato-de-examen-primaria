@@ -81,10 +81,16 @@ export const BlockItem: React.FC<BlockItemProps> = ({
       const delta = moveEvent.clientY - startYRef.current;
       const targetHeight = startHeightRef.current + delta;
 
-      if (targetHeight < 110) {
+      const isClosedQuestion = block.type === 'multiple_choice' || block.type === 'true_false' || block.type === 'matching';
+      const maxAllowed = isClosedQuestion 
+        ? Math.min(270, Math.max(230, startHeightRef.current + 80))
+        : 450;
+      const minThreshold = 95;
+
+      if (targetHeight < minThreshold) {
         onUpdateBlock({ customMinHeight: undefined });
       } else {
-        const clamped = Math.max(110, Math.min(500, Math.round(targetHeight)));
+        const clamped = Math.max(minThreshold, Math.min(maxAllowed, Math.round(targetHeight)));
         onUpdateBlock({ customMinHeight: clamped });
       }
     };
@@ -152,7 +158,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         }
       }}
       style={block.customMinHeight ? { minHeight: `${block.customMinHeight}px` } : undefined}
-      className={`exam-block-item relative group rounded-xl p-3 sm:p-4 flex flex-col justify-between transition-all ${
+      className={`exam-block-item relative group rounded-xl p-3 sm:p-4 flex flex-col transition-all ${
         showBorders ? 'border' : 'border border-transparent'
       } ${getBlockThemeClasses()} ${
         isEditor 
@@ -374,7 +380,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
       )}
 
       {/* Dynamic Answer Format Layouts */}
-      <div className="exam-answers-area flex-1 flex flex-col justify-between">
+      <div className="exam-answers-area mt-2.5">
         {block.type === 'multiple_choice' && (
           <MultipleChoiceOptions
             block={block}
@@ -423,7 +429,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
           className={`absolute -bottom-2 inset-x-0 h-4 flex items-center justify-center cursor-row-resize z-20 print:hidden select-none group/resize-h ${
             isResizingHeight ? 'cursor-row-resize' : ''
           }`}
-          title="Arrastra hacia abajo para ajustar la altura de este enunciado (el espacio se distribuye proporcionalmente). Doble clic para volver al tamaño automático."
+          title="Arrastra hacia abajo para ajustar la altura de este enunciado (con límite máximo controlado). Doble clic para volver al tamaño automático."
         >
           <div className={`w-14 h-1.5 rounded-full transition-all flex items-center justify-center shadow-2xs ${
             isResizingHeight 

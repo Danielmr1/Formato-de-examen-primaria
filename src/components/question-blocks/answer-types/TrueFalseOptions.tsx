@@ -42,7 +42,7 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
   };
 
   return (
-    <div className="mt-1 flex-1 flex flex-col justify-between gap-2">
+    <div className="mt-1 flex flex-col gap-2">
       {current.map((tf, idx) => {
         const isEmpty = isEditor && (!tf.statement || tf.statement.trim() === '');
         return (
