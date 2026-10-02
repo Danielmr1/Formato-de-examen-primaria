@@ -127,10 +127,10 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
               {/* Right: Score Box or spacer to balance centering */}
               <div className="shrink-0 w-12 sm:w-14 flex items-center justify-end">
                 {header.showScoreBox && (
-                  <div className="w-12 h-9 border border-indigo-300 rounded-lg flex flex-col items-center justify-center shrink-0 bg-indigo-50/70 text-indigo-950">
-                    <span className="text-[8px] font-black uppercase text-indigo-700 leading-none">NOTA</span>
-                    <span className="text-[9px] text-indigo-900 font-bold leading-none mt-0.5">/{totalScore}</span>
-                  </div>
+                  <div 
+                    className="w-12 h-9 border border-indigo-400 rounded-lg shrink-0 bg-indigo-50/20"
+                    title="Espacio para calificar la evaluación"
+                  />
                 )}
               </div>
             </div>
@@ -219,10 +219,10 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
               {/* Right: Score Box or spacer to balance centering */}
               <div className="shrink-0 w-12 sm:w-14 flex items-center justify-end">
                 {header.showScoreBox && (
-                  <div className="w-12 h-9 border border-slate-800 rounded flex flex-col items-center justify-center shrink-0 bg-white">
-                    <span className="text-[8px] font-black uppercase text-slate-700 leading-none">NOTA</span>
-                    <span className="text-[9px] text-slate-400 font-bold leading-none mt-0.5">/{totalScore}</span>
-                  </div>
+                  <div 
+                    className="w-12 h-9 border border-slate-800 rounded-lg shrink-0 bg-white"
+                    title="Espacio para calificar la evaluación"
+                  />
                 )}
               </div>
             </div>
