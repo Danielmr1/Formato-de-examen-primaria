@@ -38,6 +38,8 @@ interface BlockItemProps {
   statementJustify?: boolean;
   lineSpacing?: 'compact' | 'normal' | 'relaxed';
   isMasonryColumn?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
 export const BlockItem: React.FC<BlockItemProps> = ({
@@ -57,6 +59,8 @@ export const BlockItem: React.FC<BlockItemProps> = ({
   baseFontSize,
   statementJustify,
   lineSpacing,
+  isSelected = false,
+  onSelect,
 }) => {
   const [isStatementFocused, setIsStatementFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -107,25 +111,41 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 
   return (
     <div
+      onClick={() => {
+        if (isEditor && onSelect) {
+          onSelect();
+        }
+      }}
       className={`exam-block-item relative group rounded-xl p-3 sm:p-4 transition-all ${
         showBorders ? 'border' : 'border border-transparent'
       } ${getBlockThemeClasses()} ${
-        isEditor ? 'hover:shadow-md hover:border-indigo-300' : ''
+        isEditor 
+          ? isSelected
+            ? 'ring-2 ring-indigo-400 border-indigo-400 shadow-md'
+            : 'hover:border-indigo-300 hover:shadow-2xs cursor-pointer'
+          : ''
       }`}
     >
-      {/* Top Header Bar */}
-      <BlockHeader
-        block={block}
-        index={index}
-        totalBlocks={totalBlocks}
-        isEditor={isEditor}
-        onUpdateBlock={onUpdateBlock}
-        onDeleteBlock={onDeleteBlock}
-        onDuplicateBlock={onDuplicateBlock}
-        onMoveUp={onMoveUp}
-        onMoveDown={onMoveDown}
-        onOpenDiagramModal={onOpenFigureModal}
-      />
+      {/* Floating Header Toolbar: Only visible when clicked / active in editor */}
+      {isEditor && isSelected && (
+        <div 
+          className="absolute -top-11 left-0 right-0 z-30 animate-in fade-in zoom-in-95 duration-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <BlockHeader
+            block={block}
+            index={index}
+            totalBlocks={totalBlocks}
+            isEditor={isEditor}
+            onUpdateBlock={onUpdateBlock}
+            onDeleteBlock={onDeleteBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            onOpenDiagramModal={onOpenFigureModal}
+          />
+        </div>
+      )}
 
       {/* Top Figure if position is 'top' */}
       {block.figure && block.figure.position === 'top' && (
@@ -159,9 +179,9 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         {/* Statement area */}
         <div className="exam-statement-area flex-1 min-w-0">
           <div className="flex items-start gap-2">
-            {/* Question titleNumber badge in non-editor / print view */}
+            {/* Question titleNumber badge */}
             {block.titleNumber && (
-              <span className={`font-extrabold text-slate-800 text-sm select-none ${isEditor ? 'hidden print:inline' : 'inline'}`}>
+              <span className="font-extrabold text-slate-800 text-sm select-none shrink-0 pt-0.5">
                 {block.titleNumber}.
               </span>
             )}

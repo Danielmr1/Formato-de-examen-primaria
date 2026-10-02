@@ -173,7 +173,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-1 pb-1.5 mb-2 border-b border-slate-200 text-xs text-slate-700 print:hidden select-none">
+    <div className="flex items-center justify-between gap-1 bg-white/95 backdrop-blur-xs border border-indigo-300 shadow-md rounded-xl px-2.5 py-1 text-xs text-slate-700 print:hidden select-none">
       {/* Izquierda: Número y tipo */}
       <div className="flex items-center gap-1.5 min-w-0">
         <span className="font-bold text-slate-700 shrink-0">N°</span>

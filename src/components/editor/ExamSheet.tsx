@@ -53,6 +53,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState<number>(0);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
   // Helper para asignar columnas de ancho en CSS grid de 12
   const getColSpanClassSafe = (cols: number) => {
@@ -144,7 +145,15 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
       )}
 
       {/* Contenedor medido del contenido real de preguntas y encabezado */}
-      <div ref={contentRef} className="w-full flex flex-col">
+      <div 
+        ref={contentRef} 
+        className="w-full flex flex-col"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setSelectedBlockId(null);
+          }
+        }}
+      >
         {/* Institutional Header */}
         <HeaderEditor
           header={exam.header}
@@ -154,7 +163,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         />
 
         {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
-        <div className="flex flex-col gap-3.5 sm:gap-4.5">
+        <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${activeView === 'editor' ? 'pt-4' : ''}`}>
         {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
           if (segment.type === 'full' && segment.fullBlock) {
             const { block, index: idx } = segment.fullBlock;
@@ -178,6 +187,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                   statementJustify={exam.settings.statementJustify}
                   lineSpacing={exam.settings.lineSpacing}
                   isMasonryColumn={true}
+                  isSelected={selectedBlockId === block.id}
+                  onSelect={() => setSelectedBlockId(block.id)}
                 />
               </div>
             );
@@ -221,6 +232,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                         statementJustify={exam.settings.statementJustify}
                         lineSpacing={exam.settings.lineSpacing}
                         isMasonryColumn={true}
+                        isSelected={selectedBlockId === block.id}
+                        onSelect={() => setSelectedBlockId(block.id)}
                       />
                     );
                   })}
@@ -251,6 +264,8 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                           statementJustify={exam.settings.statementJustify}
                           lineSpacing={exam.settings.lineSpacing}
                           isMasonryColumn={true}
+                          isSelected={selectedBlockId === block.id}
+                          onSelect={() => setSelectedBlockId(block.id)}
                         />
                       );
                     })}
