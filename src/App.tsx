@@ -109,6 +109,10 @@ export const App: React.FC = () => {
     exam.blocks.forEach((block, idx) => {
       const qNum = block.titleNumber ? `Pregunta N° ${block.titleNumber}` : `Pregunta ${idx + 1}`;
 
+      if (!block.statement || !block.statement.trim()) {
+        issues.push(`${qNum}: El enunciado está vacío.`);
+      }
+
       if (block.type === 'multiple_choice') {
         const hasNoKey = !block.options || block.options.length === 0 || !block.options.some(o => o.isCorrect);
         const hasEmptyOption = block.options && block.options.some(o => !o.text || !o.text.trim());
@@ -145,8 +149,8 @@ export const App: React.FC = () => {
     if (issues.length > 0) {
       const issueSummary = issues.slice(0, 4).join('\n• ');
       const extra = issues.length > 4 ? `\n... y ${issues.length - 4} detalle(s) más.` : '';
-      notify(`⚠️ No se puede imprimir: Hay ${issues.length} pregunta(s) con opciones vacías o sin clave.`, 5000);
-      alert(`⚠️ No se puede generar o imprimir el examen:\n\nPara garantizar la calidad de la prueba, completa las opciones pendientes o marca la clave correspondiente:\n\n• ${issueSummary}${extra}`);
+      notify(`⚠️ No se puede imprimir: Hay ${issues.length} detalle(s) pendientes (enunciados o alternativas vacías, o falta de claves).`, 5000);
+      alert(`⚠️ No se puede generar o imprimir el examen:\n\nPara garantizar la calidad de la prueba, completa los enunciados u opciones pendientes y marca la clave correspondiente:\n\n• ${issueSummary}${extra}`);
       return;
     }
 

@@ -66,8 +66,8 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   const hasCorrectChoice = block.options?.some(o => o.isCorrect);
 
   return (
-    <div className="mt-1 space-y-1.5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="mt-1 flex-1 flex flex-col justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 content-between">
         {(block.options || []).map((opt, idx) => {
           const letter = String.fromCharCode(65 + idx);
           const isEmpty = isEditor && (!opt.text || opt.text.trim() === '');

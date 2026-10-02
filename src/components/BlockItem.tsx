@@ -64,6 +64,40 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 }) => {
   const [isStatementFocused, setIsStatementFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isResizingHeight, setIsResizingHeight] = useState(false);
+  const startYRef = useRef(0);
+  const startHeightRef = useRef(0);
+
+  const handleHeightMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizingHeight(true);
+    startYRef.current = e.clientY;
+    const currentRenderedHeight = cardRef.current?.getBoundingClientRect().height || block.customMinHeight || 130;
+    startHeightRef.current = currentRenderedHeight;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientY - startYRef.current;
+      const targetHeight = startHeightRef.current + delta;
+
+      if (targetHeight < 110) {
+        onUpdateBlock({ customMinHeight: undefined });
+      } else {
+        const clamped = Math.max(110, Math.min(500, Math.round(targetHeight)));
+        onUpdateBlock({ customMinHeight: clamped });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingHeight(false);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
 
   const isEditor = viewMode === 'editor';
   const isSolutionKey = viewMode === 'solution_key';
@@ -111,12 +145,14 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 
   return (
     <div
+      ref={cardRef}
       onClick={() => {
         if (isEditor && onSelect) {
           onSelect();
         }
       }}
-      className={`exam-block-item relative group rounded-xl p-3 sm:p-4 transition-all ${
+      style={block.customMinHeight ? { minHeight: `${block.customMinHeight}px` } : undefined}
+      className={`exam-block-item relative group rounded-xl p-3 sm:p-4 flex flex-col justify-between transition-all ${
         showBorders ? 'border' : 'border border-transparent'
       } ${getBlockThemeClasses()} ${
         isEditor 
@@ -204,7 +240,15 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                         }}
                         className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-slate-300 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 text-justify break-words`}
                       >
-                        <FormattedMathText text={block.statement} />
+                        {block.statement && block.statement.trim() ? (
+                          <FormattedMathText text={block.statement} />
+                        ) : (
+                          <span className="text-amber-700/70 italic select-none">
+                            {block.type === 'reading_passage'
+                              ? 'Escribe aquí el texto de lectura...'
+                              : 'Escribe aquí la pregunta...'}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="relative">
@@ -226,9 +270,15 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                           onBlur={() => {
                             setTimeout(() => setIsStatementFocused(false), 150);
                           }}
-                          placeholder="Escribe la pregunta aquí..."
+                          placeholder={
+                            block.type === 'reading_passage'
+                              ? 'Escribe aquí el texto de lectura...'
+                              : 'Escribe aquí la pregunta...'
+                          }
                           rows={1}
-                          className={`w-full ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 p-0.5 bg-transparent rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 focus:bg-slate-50/40 focus:outline-hidden transition-all resize-none overflow-hidden font-normal text-justify break-words`}
+                          className={`w-full ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 p-0.5 bg-transparent rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 focus:bg-slate-50/40 focus:outline-hidden transition-all resize-none overflow-hidden font-normal text-justify break-words ${
+                            !block.statement || !block.statement.trim() ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
+                          }`}
                           style={{ minHeight: '26px' }}
                           autoFocus={isStatementFocused}
                           title={`Límite: máx. ${maxStatementChars} caracteres (palabras de máx. 25 letras)`}
@@ -324,7 +374,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
       )}
 
       {/* Dynamic Answer Format Layouts */}
-      <div className="exam-answers-area">
+      <div className="exam-answers-area flex-1 flex flex-col justify-between">
         {block.type === 'multiple_choice' && (
           <MultipleChoiceOptions
             block={block}
@@ -361,6 +411,29 @@ export const BlockItem: React.FC<BlockItemProps> = ({
           />
         )}
       </div>
+
+      {/* Tirador inferior para ajustar altura con el ratón (Opción 1: proporcional con límite) */}
+      {isEditor && isSelected && block.type !== 'open_development' && (
+        <div
+          onMouseDown={handleHeightMouseDown}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            onUpdateBlock({ customMinHeight: undefined });
+          }}
+          className={`absolute -bottom-2 inset-x-0 h-4 flex items-center justify-center cursor-row-resize z-20 print:hidden select-none group/resize-h ${
+            isResizingHeight ? 'cursor-row-resize' : ''
+          }`}
+          title="Arrastra hacia abajo para ajustar la altura de este enunciado (el espacio se distribuye proporcionalmente). Doble clic para volver al tamaño automático."
+        >
+          <div className={`w-14 h-1.5 rounded-full transition-all flex items-center justify-center shadow-2xs ${
+            isResizingHeight 
+              ? 'bg-indigo-600 w-20 ring-2 ring-indigo-300' 
+              : 'bg-slate-300 group-hover/resize-h:bg-indigo-500 group-hover/resize-h:w-18'
+          }`}>
+            <div className="w-2.5 h-0.5 bg-white/70 rounded-full" />
+          </div>
+        </div>
+      )}
 
       {/* Tirador para ensanchar o reducir con el ratón (de 1 en 1) */}
       {isEditor && (

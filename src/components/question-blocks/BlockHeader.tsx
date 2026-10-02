@@ -137,10 +137,10 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
     } else if (newType === 'multiple_choice') {
       if (!block.options || block.options.length === 0) {
         updates.options = [
-          { id: `opt-1`, label: 'A', text: 'Opción A' },
-          { id: `opt-2`, label: 'B', text: 'Opción B', isCorrect: true },
-          { id: `opt-3`, label: 'C', text: 'Opción C' },
-          { id: `opt-4`, label: 'D', text: 'Opción D' },
+          { id: `opt-1`, label: 'A', text: '' },
+          { id: `opt-2`, label: 'B', text: '', isCorrect: true },
+          { id: `opt-3`, label: 'C', text: '' },
+          { id: `opt-4`, label: 'D', text: '' },
         ];
       }
     } else if (newType === 'open_development') {
@@ -153,16 +153,16 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
     } else if (newType === 'true_false') {
       if (!block.trueFalseOptions || block.trueFalseOptions.length === 0) {
         updates.trueFalseOptions = [
-          { id: `tf-1`, statement: 'Afirmación 1', isTrue: true },
-          { id: `tf-2`, statement: 'Afirmación 2', isTrue: false },
+          { id: `tf-1`, statement: '', isTrue: true },
+          { id: `tf-2`, statement: '', isTrue: false },
         ];
       }
     } else if (newType === 'matching') {
       if (!block.matchingPairs || block.matchingPairs.length === 0) {
         updates.matchingPairs = [
-          { id: 'm-1', leftText: 'Elemento 1', rightText: 'Definición A' },
-          { id: 'm-2', leftText: 'Elemento 2', rightText: 'Definición B' },
-          { id: 'm-3', leftText: 'Elemento 3', rightText: 'Definición C' },
+          { id: 'm-1', leftText: '', rightText: '' },
+          { id: 'm-2', leftText: '', rightText: '' },
+          { id: 'm-3', leftText: '', rightText: '' },
         ];
       }
     } else if (newType === 'reading_passage') {

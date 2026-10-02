@@ -63,10 +63,10 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   };
 
   return (
-    <div className="mt-1 space-y-2">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="mt-1 flex-1 flex flex-col justify-between">
+      <div className="grid grid-cols-2 gap-4 flex-1">
         {/* Left Column (Numbered) */}
-        <div className="space-y-2">
+        <div className="flex flex-col justify-between gap-2">
           {pairs.map((p, idx) => {
             const isLeftEmpty = isEditor && (!p.leftText || p.leftText.trim() === '');
             return (
@@ -106,7 +106,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
         </div>
 
         {/* Right Column (Lettered with parenthesis) */}
-        <div className="space-y-2">
+        <div className="flex flex-col justify-between gap-2">
           {pairs.map((p, idx) => {
             const isRightEmpty = isEditor && (!p.rightText || p.rightText.trim() === '');
             const letter = String.fromCharCode(65 + idx);

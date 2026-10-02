@@ -168,6 +168,7 @@ export function useExamState() {
   // Questions with empty options calculation (opción múltiple, V/F, emparejamiento)
   const questionsWithEmptyOptionsCount = useMemo(() => {
     return exam.blocks.filter(b => {
+      if (!b.statement || !b.statement.trim()) return true;
       if (b.type === 'multiple_choice') {
         return b.options && b.options.some(o => !o.text || !o.text.trim());
       }
@@ -222,10 +223,10 @@ export function useExamState() {
       const blockNum = `${count}`;
 
       const defaultOptions: ChoiceOption[] = [
-        { id: `opt-1`, label: 'A', text: 'Opción A' },
-        { id: `opt-2`, label: 'B', text: 'Opción B', isCorrect: true },
-        { id: `opt-3`, label: 'C', text: 'Opción C' },
-        { id: `opt-4`, label: 'D', text: 'Opción D' },
+        { id: `opt-1`, label: 'A', text: '' },
+        { id: `opt-2`, label: 'B', text: '', isCorrect: true },
+        { id: `opt-3`, label: 'C', text: '' },
+        { id: `opt-4`, label: 'D', text: '' },
       ];
 
       let figureData: FigureData | undefined = undefined;
@@ -240,9 +241,7 @@ export function useExamState() {
       const newBlock: ExamBlock = {
         id: `blk-${Date.now()}`,
         titleNumber: blockNum,
-        statement: type === 'reading_passage' 
-          ? 'Escribe aquí el texto de lectura...'
-          : 'Escribe aquí la pregunta...',
+        statement: '',
         type: type,
         width: width,
         points: type === 'reading_passage' ? 0 : 2,
@@ -250,8 +249,8 @@ export function useExamState() {
         figure: figureData,
         options: (type === 'multiple_choice') ? defaultOptions : undefined,
         trueFalseOptions: (type === 'true_false') ? [
-          { id: `tf-1`, statement: 'Afirmación 1', isTrue: true },
-          { id: `tf-2`, statement: 'Afirmación 2', isTrue: false },
+          { id: `tf-1`, statement: '', isTrue: true },
+          { id: `tf-2`, statement: '', isTrue: false },
         ] : undefined,
         developmentConfig: (type === 'open_development') ? {
           style: 'grid',
@@ -259,9 +258,9 @@ export function useExamState() {
           promptHint: ''
         } : undefined,
         matchingPairs: (type === 'matching') ? [
-          { id: 'm-1', leftText: 'Elemento 1', rightText: 'Definición A' },
-          { id: 'm-2', leftText: 'Elemento 2', rightText: 'Definición B' },
-          { id: 'm-3', leftText: 'Elemento 3', rightText: 'Definición C' },
+          { id: 'm-1', leftText: '', rightText: '' },
+          { id: 'm-2', leftText: '', rightText: '' },
+          { id: 'm-3', leftText: '', rightText: '' },
         ] : undefined
       };
 
