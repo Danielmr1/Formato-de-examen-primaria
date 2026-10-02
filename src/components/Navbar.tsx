@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v5.7
+              v5.8
             </span>
           </div>
           
@@ -157,36 +157,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Pedagogical & Points Guardrail Badges */}
         <div className="hidden lg:flex items-center gap-1.5 shrink-0">
-          {exam.settings.showPointsInPrint !== false ? (
-            <div 
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-2xs select-none ${
-                totalPoints === 20 || totalPoints === 100
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'bg-indigo-50 text-indigo-800 border-indigo-200'
-              }`}
-              title={
-                totalPoints === 20 
-                  ? 'Escala vigesimal estándar (20 pts) completa' 
-                  : totalPoints === 100 
-                  ? 'Escala centesimal (100 pts) completa' 
-                  : `Total acumulado: ${totalPoints} puntos (Sugerido estándar: 20 pts)`
-              }
-            >
-              <span className="font-semibold text-slate-500">Puntaje:</span>
-              <span className="font-extrabold">{totalPoints} pts</span>
-              {totalPoints === 20 && <span className="text-[10px] text-emerald-600 font-extrabold">✓ (20)</span>}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onUpdateSettings?.({ showPointsInPrint: true })}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border border-slate-200 bg-slate-50 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors cursor-pointer select-none"
-              title="El puntaje está desactivado para este examen. Haz clic para activarlo."
-            >
-              <span>Sin puntaje</span>
-            </button>
-          )}
-
           {/* Missing Keys Alert */}
           {questionsWithoutKeyCount > 0 && (
             <button 
