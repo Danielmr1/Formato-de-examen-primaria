@@ -497,6 +497,31 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
               </div>
             </div>
 
+            {/* GRUPO 3.5: CALIFICACIÓN / PUNTAJE */}
+            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <CheckSquare className="w-3 h-3 text-slate-500" />
+                Puntaje
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onUpdateSettings({ showPointsInPrint: exam.settings.showPointsInPrint === false ? true : false })}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
+                    exam.settings.showPointsInPrint !== false
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold shadow-2xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                  title="Activar o desactivar puntajes en los enunciados y en el examen"
+                >
+                  <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{exam.settings.showPointsInPrint !== false ? 'Puntaje Activo' : 'Sin Puntaje'}</span>
+                  {exam.settings.showPointsInPrint !== false && <Check className="w-3 h-3 text-emerald-600 ml-0.5" />}
+                </button>
+              </div>
+            </div>
+
             {/* GRUPO 4: ENCABEZADO */}
             {onUpdateHeader && (
               <div className="flex flex-col gap-1 shrink-0">

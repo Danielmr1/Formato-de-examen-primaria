@@ -381,6 +381,7 @@ export const App: React.FC = () => {
         questionsWithoutKeyCount={questionsWithoutKeyCount}
         questionsWithEmptyOptionsCount={questionsWithEmptyOptionsCount}
         duplicateNumbersList={duplicateNumbersList}
+        onUpdateSettings={handleUpdateSettings}
       />
 
 

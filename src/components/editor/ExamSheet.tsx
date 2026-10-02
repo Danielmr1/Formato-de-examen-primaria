@@ -184,6 +184,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                   isSelected={!isDuplicateCopy && selectedBlockId === block.id}
                   onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
                   isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
+                  showPoints={exam.settings.showPointsInPrint !== false}
                 />
               </div>
             );
@@ -230,6 +231,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                         isSelected={!isDuplicateCopy && selectedBlockId === block.id}
                         onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
                         isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
+                        showPoints={exam.settings.showPointsInPrint !== false}
                       />
                     );
                   })}
@@ -263,6 +265,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
                           isSelected={!isDuplicateCopy && selectedBlockId === block.id}
                           onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
                           isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
+                          showPoints={exam.settings.showPointsInPrint !== false}
                         />
                       );
                     })}

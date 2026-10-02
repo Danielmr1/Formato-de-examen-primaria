@@ -41,6 +41,7 @@ interface BlockItemProps {
   isSelected?: boolean;
   onSelect?: () => void;
   isDuplicateNumber?: boolean;
+  showPoints?: boolean;
 }
 
 export const BlockItem: React.FC<BlockItemProps> = ({
@@ -63,6 +64,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
   isSelected = false,
   onSelect,
   isDuplicateNumber = false,
+  showPoints = true,
 }) => {
   const [isStatementFocused, setIsStatementFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -255,7 +257,14 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                         className={`w-full cursor-text rounded p-0.5 border border-transparent hover:border-slate-300 transition-all ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 text-justify break-words`}
                       >
                         {block.statement && block.statement.trim() ? (
-                          <FormattedMathText text={block.statement} />
+                          <>
+                            <FormattedMathText text={block.statement} />
+                            {showPoints && (block.points ?? 0) > 0 && block.type !== 'reading_passage' && (
+                              <span className="font-bold text-indigo-700/85 text-xs ml-1 select-none whitespace-nowrap">
+                                ({block.points} {block.points === 1 ? 'pt' : 'pts'})
+                              </span>
+                            )}
+                          </>
                         ) : (
                           <span className="text-amber-700/70 italic select-none">
                             {block.type === 'reading_passage'
@@ -325,10 +334,14 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                     )}
                   </div>
 
-                  <FormattedMathText
-                    text={block.statement}
-                    className={`hidden print:block ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 font-normal text-justify break-words`}
-                  />
+                  <div className={`hidden print:block ${getStatementSizeClass()} ${getLineSpacingClass()} text-slate-900 font-normal text-justify break-words`}>
+                    <FormattedMathText text={block.statement} />
+                    {showPoints && (block.points ?? 0) > 0 && block.type !== 'reading_passage' && (
+                      <span className="font-bold text-black text-xs ml-1 whitespace-nowrap">
+                        ({block.points} {block.points === 1 ? 'pt' : 'pts'})
+                      </span>
+                    )}
+                  </div>
                 </>
               ) : (
                 <div 
@@ -342,6 +355,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                     </span>
                   )}
                   <FormattedMathText text={block.statement} />
+                  {showPoints && (block.points ?? 0) > 0 && block.type !== 'reading_passage' && (
+                    <span className="font-bold text-slate-800 print:text-black text-xs ml-1 whitespace-nowrap">
+                      ({block.points} {block.points === 1 ? 'pt' : 'pts'})
+                    </span>
+                  )}
                 </div>
               )}
             </div>
