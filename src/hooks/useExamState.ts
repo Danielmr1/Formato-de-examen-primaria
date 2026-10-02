@@ -162,6 +162,22 @@ export function useExamState() {
     }).length;
   }, [exam.blocks]);
 
+  // Questions with empty options calculation (opción múltiple, V/F, emparejamiento)
+  const questionsWithEmptyOptionsCount = useMemo(() => {
+    return exam.blocks.filter(b => {
+      if (b.type === 'multiple_choice') {
+        return b.options && b.options.some(o => !o.text || !o.text.trim());
+      }
+      if (b.type === 'true_false') {
+        return b.trueFalseOptions && b.trueFalseOptions.some(tf => !tf.statement || !tf.statement.trim());
+      }
+      if (b.type === 'matching') {
+        return b.matchingPairs && b.matchingPairs.some(p => !p.leftText?.trim() || !p.rightText?.trim());
+      }
+      return false;
+    }).length;
+  }, [exam.blocks]);
+
   // Guardar copia local en examsList
   useEffect(() => {
     setExamsList(prevList => {
@@ -454,6 +470,7 @@ export function useExamState() {
     setExamsList,
     totalPoints,
     questionsWithoutKeyCount,
+    questionsWithEmptyOptionsCount,
     copiedNotification,
     setCopiedNotification,
     undoItem,

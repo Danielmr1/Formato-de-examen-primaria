@@ -29,6 +29,7 @@ export const App: React.FC = () => {
     setExamsList,
     totalPoints,
     questionsWithoutKeyCount,
+    questionsWithEmptyOptionsCount,
     copiedNotification,
     setCopiedNotification,
     undoItem,
@@ -101,11 +102,45 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [exam, isCloudSaving, cloudSyncStatus]);
 
-  // Guardrail 4: Auditoría de clave docente previa a la impresión
+  // Guardrail 4: Auditoría previa a la impresión (Bloqueo si faltan claves o hay opciones vacías)
   const handlePrintExam = () => {
-    if (activeView === 'solution_key' && questionsWithoutKeyCount > 0) {
-      notify(`⚠️ Clave incompleta: Hay ${questionsWithoutKeyCount} pregunta(s) de opción múltiple sin respuesta correcta marcada. Revisa antes de imprimir la pauta.`, 5000);
+    const issues: string[] = [];
+
+    exam.blocks.forEach((block, idx) => {
+      const qNum = block.titleNumber ? `Pregunta N° ${block.titleNumber}` : `Pregunta ${idx + 1}`;
+
+      if (block.type === 'multiple_choice') {
+        const hasNoKey = !block.options || block.options.length === 0 || !block.options.some(o => o.isCorrect);
+        const hasEmptyOption = block.options && block.options.some(o => !o.text || !o.text.trim());
+
+        if (hasNoKey && hasEmptyOption) {
+          issues.push(`${qNum}: No tiene clave marcada y tiene alternativas vacías.`);
+        } else if (hasNoKey) {
+          issues.push(`${qNum}: No tiene clave de respuesta seleccionada.`);
+        } else if (hasEmptyOption) {
+          issues.push(`${qNum}: Tiene alternativas vacías.`);
+        }
+      } else if (block.type === 'true_false') {
+        const hasEmptyTF = block.trueFalseOptions && block.trueFalseOptions.some(tf => !tf.statement || !tf.statement.trim());
+        if (hasEmptyTF) {
+          issues.push(`${qNum} (V/F): Tiene afirmaciones vacías.`);
+        }
+      } else if (block.type === 'matching') {
+        const hasEmptyMatch = block.matchingPairs && block.matchingPairs.some(p => !p.leftText?.trim() || !p.rightText?.trim());
+        if (hasEmptyMatch) {
+          issues.push(`${qNum} (Relacionar): Tiene pares incompletos.`);
+        }
+      }
+    });
+
+    if (issues.length > 0) {
+      const issueSummary = issues.slice(0, 4).join('\n• ');
+      const extra = issues.length > 4 ? `\n... y ${issues.length - 4} detalle(s) más.` : '';
+      notify(`⚠️ No se puede imprimir: Hay ${issues.length} pregunta(s) con opciones vacías o sin clave.`, 5000);
+      alert(`⚠️ No se puede generar o imprimir el examen:\n\nPara garantizar la calidad de la prueba, completa las opciones pendientes o marca la clave correspondiente:\n\n• ${issueSummary}${extra}`);
+      return;
     }
+
     window.print();
   };
 
@@ -326,6 +361,7 @@ export const App: React.FC = () => {
         cloudSyncStatus={cloudSyncStatus}
         onManualSaveCloud={() => manualSaveCloud(exam)}
         questionsWithoutKeyCount={questionsWithoutKeyCount}
+        questionsWithEmptyOptionsCount={questionsWithEmptyOptionsCount}
       />
 
 

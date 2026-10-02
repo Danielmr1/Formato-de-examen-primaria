@@ -101,7 +101,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
         ...current,
         {
           id: `tf-${Date.now()}-${current.length}`,
-          statement: 'Nueva afirmación para evaluar',
+          statement: '',
           isTrue: true
         }
       ]
@@ -117,8 +117,8 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
         ...pairs,
         {
           id: `m-${Date.now()}-${pairs.length}`,
-          leftText: `Elemento ${pairs.length + 1}`,
-          rightText: `Definición ${String.fromCharCode(65 + pairs.length)}`
+          leftText: '',
+          rightText: ''
         }
       ]
     });

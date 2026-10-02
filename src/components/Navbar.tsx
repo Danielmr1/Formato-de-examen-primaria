@@ -16,7 +16,8 @@ import {
   LogOut,
   Cloud,
   CloudCheck,
-  AlertTriangle
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { ExamDocument } from '../types';
@@ -41,6 +42,7 @@ interface NavbarProps {
   cloudSyncStatus?: 'idle' | 'saving' | 'saved' | 'error';
   onManualSaveCloud?: () => void;
   questionsWithoutKeyCount?: number;
+  questionsWithEmptyOptionsCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -63,6 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   cloudSyncStatus = 'idle',
   onManualSaveCloud,
   questionsWithoutKeyCount = 0,
+  questionsWithEmptyOptionsCount = 0,
 }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -94,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v4.5
+              v4.6
             </span>
           </div>
           
@@ -184,6 +187,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span className="text-[11px]">{questionsWithoutKeyCount} sin clave</span>
+            </button>
+          )}
+
+          {/* Empty Options Alert */}
+          {questionsWithEmptyOptionsCount > 0 && (
+            <button 
+              type="button"
+              onClick={() => setActiveView('editor')}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs cursor-pointer transition-colors"
+              title={`${questionsWithEmptyOptionsCount} pregunta(s) tienen alternativas o textos vacíos. Haz clic para revisarlas en el editor antes de imprimir.`}
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="text-[11px]">{questionsWithEmptyOptionsCount} con vacías</span>
             </button>
           )}
         </div>

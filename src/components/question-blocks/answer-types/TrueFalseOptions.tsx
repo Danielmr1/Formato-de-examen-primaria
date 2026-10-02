@@ -43,27 +43,35 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
 
   return (
     <div className="mt-1 space-y-2">
-      {current.map((tf) => (
-        <div 
-          key={tf.id}
-          className="tf-option-card flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-lg border border-slate-200 text-xs"
-        >
-          {isEditor ? (
-            <>
-              <input
-                type="text"
-                value={tf.statement}
-                maxLength={maxChars}
-                onChange={(e) => handleUpdateTrueFalse(tf.id, e.target.value, tf.isTrue)}
-                className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 print:hidden"
-                placeholder="Escribe la afirmación..."
-                title={`Límite: máx. ${maxChars} caracteres`}
-              />
-              <span className="flex-1 hidden print:inline">
-                <FormattedMathText text={tf.statement} />
-              </span>
-            </>
-          ) : (
+      {current.map((tf, idx) => {
+        const isEmpty = isEditor && (!tf.statement || tf.statement.trim() === '');
+        return (
+          <div 
+            key={tf.id}
+            className={`tf-option-card flex items-center justify-between gap-3 p-2 rounded-lg border text-xs transition-colors ${
+              isEmpty
+                ? 'bg-amber-50/80 border-amber-300 text-amber-950 ring-1 ring-amber-300/40 print:bg-white print:border-slate-200 print:ring-0'
+                : 'bg-slate-50 border-slate-200 text-slate-800'
+            }`}
+          >
+            {isEditor ? (
+              <>
+                <input
+                  type="text"
+                  value={tf.statement}
+                  maxLength={maxChars}
+                  onChange={(e) => handleUpdateTrueFalse(tf.id, e.target.value, tf.isTrue)}
+                  className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 print:hidden ${
+                    isEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
+                  }`}
+                  placeholder={`Afirmación ${idx + 1}...`}
+                  title={`Límite: máx. ${maxChars} caracteres`}
+                />
+                <span className="flex-1 hidden print:inline">
+                  <FormattedMathText text={tf.statement} />
+                </span>
+              </>
+            ) : (
             <span className="flex-1">
               <FormattedMathText text={tf.statement} />
             </span>
@@ -117,7 +125,8 @@ export const TrueFalseOptions: React.FC<TrueFalseOptionsProps> = ({
             )}
           </div>
         </div>
-      ))}
+      );
+    })}
     </div>
   );
 };
