@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Image as ImageIcon, 
   BookOpen, 
   Plus, 
   Calculator, 
@@ -22,7 +21,7 @@ import { optimizeImage } from '../utils/imageOptimizer';
 interface WordToolbarProps {
   exam: ExamDocument;
   onAddBlock: (width: BlockWidth, type: QuestionType, withFigure?: boolean) => void;
-  onOpenDiagramModal: () => void;
+  onOpenDiagramModal?: () => void;
   onInsertMathSymbol: (symbol: string) => void;
   onUpdateSettings: (settings: Partial<ExamDocument['settings']>) => void;
   onUpdateHeader?: (header: Partial<ExamDocument['header']>) => void;
@@ -108,7 +107,11 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
         {/* Active Sheet Format Summary Badge */}
         <div className="hidden md:flex items-center gap-2 py-1 text-[11px] text-slate-500 font-medium select-none">
           <span className="px-2 py-0.5 rounded-md bg-indigo-50/80 border border-indigo-200/80 font-bold text-indigo-700 tracking-wide text-[10px]">
-            Formato A4
+            {exam.settings.paperSize === 'a5_2in1'
+              ? 'A5 (2 en 1)'
+              : exam.settings.paperSize === 'a5_single'
+              ? 'A5'
+              : 'A4'}
           </span>
           <span className="text-slate-300">•</span>
           <span className="font-semibold text-slate-700">
@@ -189,16 +192,6 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
 
             {/* Elementos adicionales */}
             <div className="flex items-center gap-1.5">
-              {/* Galería de Figuras */}
-              <button
-                onClick={onOpenDiagramModal}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 rounded-lg font-semibold transition-all cursor-pointer"
-                title="Insertar figuras geométricas o diagramas"
-              >
-                <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
-                <span>+ Figura / Diagrama</span>
-              </button>
-
               {/* Subir Logo de Colegio */}
               <button
                 type="button"
