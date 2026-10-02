@@ -43,6 +43,7 @@ interface NavbarProps {
   onManualSaveCloud?: () => void;
   questionsWithoutKeyCount?: number;
   questionsWithEmptyOptionsCount?: number;
+  duplicateNumbersList?: string[];
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -66,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onManualSaveCloud,
   questionsWithoutKeyCount = 0,
   questionsWithEmptyOptionsCount = 0,
+  duplicateNumbersList = [],
 }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -97,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v5.1
+              v5.3
             </span>
           </div>
           
@@ -201,6 +203,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span className="text-[11px]">{questionsWithEmptyOptionsCount} con vacías</span>
             </button>
+          )}
+
+          {/* Duplicate Question Numbers Alert (Informativo, no bloqueante) */}
+          {duplicateNumbersList.length > 0 && (
+            <div 
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs select-none"
+              title={`Aviso: Hay preguntas con numeración repetida (N° ${duplicateNumbersList.join(', ')}). Puedes corregirlas en el editor o conservarlas según prefieras.`}
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="text-[11px]">N° duplicado: {duplicateNumbersList.join(', ')}</span>
+            </div>
           )}
         </div>
 

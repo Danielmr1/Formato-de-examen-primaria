@@ -322,6 +322,62 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
 
         {activeTab === 'layout' && (
           <div className="flex items-stretch gap-3 md:gap-4 text-xs py-1 overflow-x-auto">
+            {/* GRUPO 0: FORMATO DE HOJA */}
+            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <FileText className="w-3 h-3 text-slate-500" />
+                Formato de Hoja
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSettings({ paperSize: 'a4' })}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                      exam.settings.paperSize === 'a4' || !exam.settings.paperSize
+                        ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="Hoja A4 estándar completa (210 × 297 mm)"
+                  >
+                    A4 Estándar
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSettings({ paperSize: 'a5_2in1' })}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      exam.settings.paperSize === 'a5_2in1'
+                        ? 'bg-emerald-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="A5 (2 en 1 A4 horizontal): Imprime 2 copias con línea de corte en medio. Ahorra 50% de papel."
+                  >
+                    <span>A5 (2 en 1 A4)</span>
+                    <span className={`text-[9px] px-1 py-0.2 rounded font-extrabold ${
+                      exam.settings.paperSize === 'a5_2in1' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      50% papel
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSettings({ paperSize: 'a5_single' })}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                      exam.settings.paperSize === 'a5_single'
+                        ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="A5 Individual (148 × 210 mm) para papel cortado en media hoja"
+                  >
+                    A5 Individual
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* GRUPO 1: TIPOGRAFÍA */}
             <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">

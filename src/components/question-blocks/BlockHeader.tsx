@@ -25,6 +25,7 @@ interface BlockHeaderProps {
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;
   onOpenDiagramModal?: (blockId: string) => void;
+  isDuplicateNumber?: boolean;
 }
 
 const QUESTION_FORMATS: { id: QuestionType; label: string }[] = [
@@ -53,7 +54,8 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   onDuplicateBlock,
   onMoveUp,
   onMoveDown,
-  onOpenDiagramModal
+  onOpenDiagramModal,
+  isDuplicateNumber = false
 }) => {
   if (!isEditor) return null;
 
@@ -181,9 +183,21 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
           type="text"
           value={block.titleNumber || ''}
           onChange={(e) => onUpdateBlock({ titleNumber: e.target.value })}
-          className="w-8 px-1 py-0.5 text-center font-bold text-indigo-700 bg-white border border-slate-300 rounded focus:border-indigo-500 focus:outline-hidden shrink-0"
-          title="Número de la pregunta"
+          className={`w-8 px-1 py-0.5 text-center font-bold rounded focus:outline-hidden shrink-0 transition-colors ${
+            isDuplicateNumber
+              ? 'text-amber-900 bg-amber-50 border border-amber-400 ring-1 ring-amber-300'
+              : 'text-indigo-700 bg-white border border-slate-300 focus:border-indigo-500'
+          }`}
+          title={isDuplicateNumber ? `Aviso: El número "${block.titleNumber}" está repetido en otra pregunta (puedes corregirlo o conservarlo).` : 'Número de la pregunta'}
         />
+        {isDuplicateNumber && (
+          <span 
+            className="text-[10px] text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0 animate-in fade-in"
+            title={`El número ${block.titleNumber} se repite en otra pregunta.`}
+          >
+            Duplicado
+          </span>
+        )}
 
         <select
           value={block.type || 'multiple_choice'}

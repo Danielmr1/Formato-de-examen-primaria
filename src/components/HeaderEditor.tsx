@@ -25,6 +25,7 @@ interface HeaderEditorProps {
   onUpdateHeader: (updated: Partial<ExamHeaderConfig>) => void;
   isPrintMode?: boolean;
   totalScore?: number;
+  isA5?: boolean;
 }
 
 export const HeaderEditor: React.FC<HeaderEditorProps> = ({
@@ -32,6 +33,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
   onUpdateHeader,
   isPrintMode = false,
   totalScore = 20,
+  isA5 = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,7 +62,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
   const titleAlignClass = 'text-center';
 
   return (
-    <div className="exam-header-block w-full mb-4 sm:mb-5 text-slate-800 transition-all group relative">
+    <div className="exam-header-block w-full mb-3 sm:mb-4 text-slate-800 transition-all group relative">
       
       {/* Hidden file input for logo */}
       <input
@@ -71,8 +73,95 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
         className="hidden"
       />
 
+      {/* Ultra-compact Header for A5 Format */}
+      {isA5 ? (
+        <div className="border border-slate-700/90 rounded-lg p-2 bg-white text-xs">
+          {/* Top row: Logo + Institution / Exam Title + Score Box */}
+          <div className="flex items-center justify-between gap-2 border-b border-slate-300 pb-1.5 mb-1.5">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {header.logoUrl && (
+                <div className="relative group/logo shrink-0">
+                  <img
+                    src={header.logoUrl}
+                    alt="Logo"
+                    className="max-h-8 max-w-12 object-contain rounded"
+                  />
+                  {!isPrintMode && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/50 text-white rounded text-[8px] font-bold opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                    >
+                      Cambiar
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                {header.institutionName ? (
+                  <div className="font-extrabold text-[11px] uppercase tracking-wide text-slate-800 truncate">
+                    {header.institutionName}
+                  </div>
+                ) : null}
+                {isPrintMode ? (
+                  <div className="font-bold text-xs text-indigo-900 truncate">
+                    {header.examTitle || 'EVALUACIÓN'}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={header.examTitle || ''}
+                    onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
+                    placeholder="TÍTULO DE LA EVALUACIÓN"
+                    className="font-bold text-xs text-indigo-900 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate"
+                  />
+                )}
+              </div>
+            </div>
 
-      
+            {/* Score Box compact */}
+            {header.showScoreBox && (
+              <div className="w-12 h-9 border border-slate-800 rounded flex flex-col items-center justify-center shrink-0 bg-white">
+                <span className="text-[8px] font-black uppercase text-slate-700 leading-none">NOTA</span>
+                <span className="text-[9px] text-slate-400 font-bold leading-none mt-0.5">/{totalScore}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom row: Estudiante, Grado, Fecha (Docente se omite en A5 para ahorrar espacio) */}
+          <div className="flex items-center gap-2 text-[11px]">
+            {header.showStudentNameField && (
+              <div className="flex-1 flex items-center gap-1 min-w-0">
+                <span className="font-bold text-slate-900 shrink-0">Estudiante:</span>
+                <div className="flex-1 border-b border-dotted border-slate-400 h-4"></div>
+              </div>
+            )}
+            {(!isPrintMode || header.gradeLevel) && (
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="font-bold text-slate-700">Grado:</span>
+                {isPrintMode ? (
+                  <span className="font-medium text-slate-900">{header.gradeLevel}</span>
+                ) : (
+                  <input
+                    type="text"
+                    value={header.gradeLevel || ''}
+                    onChange={(e) => onUpdateHeader({ gradeLevel: e.target.value })}
+                    placeholder="Grado..."
+                    className="w-16 font-medium text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent"
+                  />
+                )}
+              </div>
+            )}
+            {header.showDateField && (
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="font-bold text-slate-700">Fecha:</span>
+                <span className="font-medium text-slate-900">{header.dateStr || '___/___/___'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Boxed Style (Standard Classic Exam) */}
       {header.headerStyle === 'boxed' && (
         <div className="border border-slate-700/90 rounded-lg p-3 bg-white">
@@ -447,6 +536,8 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
             )}
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

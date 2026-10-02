@@ -40,6 +40,7 @@ interface BlockItemProps {
   isMasonryColumn?: boolean;
   isSelected?: boolean;
   onSelect?: () => void;
+  isDuplicateNumber?: boolean;
 }
 
 export const BlockItem: React.FC<BlockItemProps> = ({
@@ -61,6 +62,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
   lineSpacing,
   isSelected = false,
   onSelect,
+  isDuplicateNumber = false,
 }) => {
   const [isStatementFocused, setIsStatementFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -185,6 +187,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
             onMoveUp={onMoveUp}
             onMoveDown={onMoveDown}
             onOpenDiagramModal={onOpenFigureModal}
+            isDuplicateNumber={isDuplicateNumber}
           />
         </div>
       )}
@@ -223,7 +226,12 @@ export const BlockItem: React.FC<BlockItemProps> = ({
           <div className="flex items-start gap-2">
             {/* Question titleNumber badge */}
             {block.titleNumber && (
-              <span className="font-extrabold text-slate-800 text-sm select-none shrink-0 pt-0.5">
+              <span 
+                className={`font-extrabold text-sm select-none shrink-0 pt-0.5 ${
+                  isDuplicateNumber && isEditor ? 'text-amber-700' : 'text-slate-800'
+                }`}
+                title={isDuplicateNumber && isEditor ? `Aviso: El número "${block.titleNumber}" está repetido en otra pregunta.` : undefined}
+              >
                 {block.titleNumber}.
               </span>
             )}

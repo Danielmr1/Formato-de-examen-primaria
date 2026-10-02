@@ -18,6 +18,7 @@ interface PreviewToolbarProps {
   onPrint: () => void;
   activeView: 'preview_a4' | 'solution_key';
   onSwitchView: (view: 'preview_a4' | 'solution_key') => void;
+  paperSize?: string;
 }
 
 export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
@@ -27,7 +28,8 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   onReturnToEditor,
   onPrint,
   activeView,
-  onSwitchView
+  onSwitchView,
+  paperSize = 'a4',
 }) => {
   const handleZoomIn = () => {
     onZoomChange(Math.min(130, zoom + 10));
@@ -49,8 +51,20 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-lg border border-slate-700 font-medium">
             <FileText className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="font-bold text-slate-200">A4</span>
-            <span className="text-slate-400 text-[11px]">(210 × 297 mm)</span>
+            <span className="font-bold text-slate-200">
+              {paperSize === 'a5_2in1' 
+                ? 'A5 (2 en 1 A4)' 
+                : paperSize === 'a5_single'
+                ? 'A5 Individual'
+                : 'A4'}
+            </span>
+            <span className="text-slate-400 text-[11px]">
+              {paperSize === 'a5_2in1' 
+                ? '(297 × 210 mm)' 
+                : paperSize === 'a5_single'
+                ? '(148 × 210 mm)'
+                : '(210 × 297 mm)'}
+            </span>
           </div>
 
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-950/70 border border-indigo-800/80 text-indigo-200 font-bold">

@@ -30,6 +30,7 @@ export const App: React.FC = () => {
     totalPoints,
     questionsWithoutKeyCount,
     questionsWithEmptyOptionsCount,
+    duplicateNumbersList,
     copiedNotification,
     setCopiedNotification,
     undoItem,
@@ -152,6 +153,10 @@ export const App: React.FC = () => {
       notify(`⚠️ No se puede imprimir: Hay ${issues.length} detalle(s) pendientes (enunciados o alternativas vacías, o falta de claves).`, 5000);
       alert(`⚠️ No se puede generar o imprimir el examen:\n\nPara garantizar la calidad de la prueba, completa los enunciados u opciones pendientes y marca la clave correspondiente:\n\n• ${issueSummary}${extra}`);
       return;
+    }
+
+    if (duplicateNumbersList.length > 0) {
+      notify(`ℹ️ Aviso: Hay preguntas con numeración duplicada (${duplicateNumbersList.join(', ')}). Procediendo a imprimir...`, 3500);
     }
 
     window.print();
@@ -375,6 +380,7 @@ export const App: React.FC = () => {
         onManualSaveCloud={() => manualSaveCloud(exam)}
         questionsWithoutKeyCount={questionsWithoutKeyCount}
         questionsWithEmptyOptionsCount={questionsWithEmptyOptionsCount}
+        duplicateNumbersList={duplicateNumbersList}
       />
 
 
@@ -404,8 +410,31 @@ export const App: React.FC = () => {
           onPrint={handlePrintExam}
           activeView={activeView}
           onSwitchView={setActiveView}
+          paperSize={exam.settings.paperSize}
         />
       )}
+
+      {/* Reglas de impresión dinámicas según el formato de hoja elegido (A4, A5 2-en-1, A5 individual) */}
+      <style>{`
+        @media print {
+          @page {
+            size: ${
+              exam.settings.paperSize === 'a5_2in1'
+                ? 'A4 landscape'
+                : exam.settings.paperSize === 'a5_single'
+                ? 'A5 portrait'
+                : 'A4 portrait'
+            };
+            margin: ${
+              exam.settings.paperSize === 'a5_2in1'
+                ? '4mm 6mm'
+                : exam.settings.paperSize === 'a5_single'
+                ? '5mm'
+                : '6mm 8mm 8mm 8mm'
+            };
+          }
+        }
+      `}</style>
 
       {/* Toast interactivo con Guardrail de Deshacer (Undo) */}
       <UndoToast

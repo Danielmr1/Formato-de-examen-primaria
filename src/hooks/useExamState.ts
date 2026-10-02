@@ -182,6 +182,24 @@ export function useExamState() {
     }).length;
   }, [exam.blocks]);
 
+  // Detección de números de enunciados duplicados (informativo, no bloqueante)
+  const duplicateNumbersList = useMemo(() => {
+    const counts = new Map<string, number>();
+    exam.blocks.forEach(b => {
+      const num = b.titleNumber?.trim();
+      if (num) {
+        counts.set(num, (counts.get(num) || 0) + 1);
+      }
+    });
+    const dupes: string[] = [];
+    counts.forEach((count, num) => {
+      if (count > 1) {
+        dupes.push(num);
+      }
+    });
+    return dupes;
+  }, [exam.blocks]);
+
   // Guardar copia local en examsList
   useEffect(() => {
     setExamsList(prevList => {
@@ -473,6 +491,7 @@ export function useExamState() {
     totalPoints,
     questionsWithoutKeyCount,
     questionsWithEmptyOptionsCount,
+    duplicateNumbersList,
     copiedNotification,
     setCopiedNotification,
     undoItem,

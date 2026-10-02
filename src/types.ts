@@ -89,7 +89,7 @@ export interface ExamDocument {
   header: ExamHeaderConfig;
   blocks: ExamBlock[];
   settings: {
-    paperSize: 'a4' | 'letter';
+    paperSize: 'a4' | 'letter' | 'a5_2in1' | 'a5_single';
     fontFamily: 'sans' | 'serif' | 'mono';
     baseFontSize: 'sm' | 'md' | 'lg';
     gridColumns: 12;
