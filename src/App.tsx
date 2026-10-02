@@ -351,7 +351,7 @@ export const App: React.FC = () => {
   const isExamEmpty = exam.blocks.length === 0 && (!exam.header.examTitle || exam.header.examTitle.trim() === '');
 
   return (
-    <div className={`min-h-screen bg-slate-200/70 text-slate-900 ${getFontClass()} flex flex-col`}>
+    <div className={`min-h-screen ${exam.settings.colorMode === 'grayscale' ? 'bg-slate-100' : 'bg-slate-200/70'} print:bg-white print:p-0 print:m-0 text-slate-900 ${getFontClass()} flex flex-col`}>
       {/* Barra de navegación principal */}
       <Navbar
         exam={exam}
@@ -445,14 +445,14 @@ export const App: React.FC = () => {
       />
 
       {/* Espacio de trabajo / Hoja de examen A4 con soporte de Zoom */}
-      <main className="flex-1 py-3 sm:py-6 px-1 sm:px-3 flex justify-center items-start overflow-y-auto">
+      <main className="flex-1 py-3 sm:py-6 px-1 sm:px-3 print:p-0 print:m-0 print:bg-white flex justify-center items-start overflow-y-auto">
         <div 
           style={
             (activeView === 'preview_a4' || activeView === 'solution_key') && previewZoom !== 100
               ? { transform: `scale(${previewZoom / 100})`, transformOrigin: 'top center' }
               : undefined
           }
-          className="w-full flex justify-center transition-transform duration-150"
+          className="w-full flex justify-center transition-transform duration-150 print:transform-none print:w-full print:bg-white print:p-0 print:m-0"
         >
           <ExamSheet
             exam={exam}

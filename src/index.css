@@ -13,12 +13,20 @@
     margin: 6mm 8mm 8mm 8mm;
   }
 
-  body {
+  html,
+  body,
+  #root,
+  #root > div,
+  main {
     background-color: #ffffff !important;
+    background: #ffffff !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .print\:hidden,
@@ -184,6 +192,16 @@
    MODO BLANCO Y NEGRO / FOTOCOPIADORA ESCOLAR (B&N)
    Optimizado para vista previa y salida sin consumo excesivo de tóner
    ======================================================== */
+.exam-grayscale-mode {
+  --tw-border-opacity: 1;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.exam-grayscale-mode * {
+  box-shadow: none !important;
+}
+
 .exam-grayscale-mode img {
   filter: grayscale(100%) contrast(110%) !important;
 }
@@ -199,7 +217,9 @@
 .exam-grayscale-mode .border-amber-200,
 .exam-grayscale-mode .border-amber-300,
 .exam-grayscale-mode .border-blue-200,
-.exam-grayscale-mode .border-purple-200 {
+.exam-grayscale-mode .border-purple-200,
+.exam-grayscale-mode .border-sky-300,
+.exam-grayscale-mode .border-sky-200 {
   border-color: #334155 !important;
 }
 
@@ -214,21 +234,29 @@
 .exam-grayscale-mode .text-blue-800,
 .exam-grayscale-mode .text-purple-900,
 .exam-grayscale-mode .text-emerald-800,
-.exam-grayscale-mode .text-emerald-700 {
+.exam-grayscale-mode .text-emerald-700,
+.exam-grayscale-mode .text-sky-900,
+.exam-grayscale-mode .text-sky-800 {
   color: #0f172a !important;
 }
 
+/* Forzar blanco absoluto en cualquier fondo de tarjeta, bloque o contenedor */
+.exam-grayscale-mode [class*="bg-indigo-"],
+.exam-grayscale-mode [class*="bg-sky-"],
+.exam-grayscale-mode [class*="bg-blue-"],
+.exam-grayscale-mode [class*="bg-amber-"],
+.exam-grayscale-mode [class*="bg-purple-"],
+.exam-grayscale-mode [class*="bg-emerald-"],
+.exam-grayscale-mode [class*="bg-slate-50"],
+.exam-grayscale-mode [class*="bg-slate-100"],
+.exam-grayscale-mode [class*="bg-slate-200"],
 .exam-grayscale-mode .bg-indigo-50,
-.exam-grayscale-mode .bg-indigo-50\/70,
-.exam-grayscale-mode .bg-indigo-50\/50,
 .exam-grayscale-mode .bg-amber-50,
-.exam-grayscale-mode .bg-amber-50\/40,
-.exam-grayscale-mode .bg-amber-50\/50,
 .exam-grayscale-mode .bg-blue-50,
-.exam-grayscale-mode .bg-blue-50\/50,
 .exam-grayscale-mode .bg-purple-50,
 .exam-grayscale-mode .bg-emerald-50 {
   background-color: #ffffff !important;
+  background: #ffffff !important;
 }
 
 .exam-grayscale-mode .bg-indigo-600 {
@@ -237,7 +265,7 @@
 }
 
 .exam-grayscale-mode .bg-indigo-100 {
-  background-color: #f1f5f9 !important;
+  background-color: #ffffff !important;
   color: #0f172a !important;
 }
 

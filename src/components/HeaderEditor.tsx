@@ -128,7 +128,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
               <div className="shrink-0 w-12 sm:w-14 flex items-center justify-end">
                 {header.showScoreBox && (
                   <div 
-                    className="w-12 h-9 border border-indigo-400 rounded-lg shrink-0 bg-indigo-50/20"
+                    className="w-12 h-9 border border-slate-700 rounded-lg shrink-0 bg-white"
                     title="Espacio para calificar la evaluación"
                   />
                 )}
@@ -454,7 +454,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
             {/* Score Box aligned to bottom */}
             {header.showScoreBox && (
               <div 
-                className={`border-2 border-slate-900 rounded-lg px-2 text-center bg-slate-50/50 shrink-0 flex items-center justify-center transition-all ${scoreBoxDimensions} self-end mb-0.5`}
+                className={`border-2 border-slate-900 rounded-lg px-2 text-center bg-white shrink-0 flex items-center justify-center transition-all ${scoreBoxDimensions} self-end mb-0.5`}
                 title="Espacio para calificar la evaluación"
               />
             )}
@@ -645,7 +645,7 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
             {/* Score Box */}
             {header.showScoreBox && (
               <div 
-                className={`border-2 border-indigo-500 rounded-lg bg-indigo-50/20 text-center shrink-0 transition-all ${scoreBoxDimensions} self-end mb-0.5`}
+                className={`border-2 border-indigo-500 rounded-lg bg-white text-center shrink-0 transition-all ${scoreBoxDimensions} self-end mb-0.5`}
                 title="Espacio para calificar la evaluación"
               />
             )}

@@ -140,7 +140,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   const renderExamBody = (isDuplicateCopy: boolean = false) => (
     <div 
       ref={!isDuplicateCopy ? contentRef : undefined} 
-      className="w-full flex flex-col"
+      className="w-full flex flex-col bg-white"
       onClick={(e) => {
         if (!isDuplicateCopy && e.target === e.currentTarget) {
           setSelectedBlockId(null);
@@ -333,17 +333,17 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
             </div>
             <div className="print:hidden w-full">{renderExamBody(false)}</div>
             {/* Modo Impresión directa desde editor */}
-            <div className="hidden print:grid grid-cols-2 gap-6 relative w-full">
-              <div className="pr-3">{renderExamBody(false)}</div>
+            <div className="hidden print:grid grid-cols-2 gap-6 relative w-full bg-white">
+              <div className="pr-3 bg-white">{renderExamBody(false)}</div>
               <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
-              <div className="pl-3">{renderExamBody(true)}</div>
+              <div className="pl-3 bg-white">{renderExamBody(true)}</div>
             </div>
           </>
         ) : (
-          <div className="grid grid-cols-2 gap-6 relative w-full">
-            <div className="pr-3">{renderExamBody(false)}</div>
+          <div className="grid grid-cols-2 gap-6 relative w-full bg-white">
+            <div className="pr-3 bg-white">{renderExamBody(false)}</div>
             <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
-            <div className="pl-3">{renderExamBody(true)}</div>
+            <div className="pl-3 bg-white">{renderExamBody(true)}</div>
           </div>
         )
       ) : (

@@ -1,23 +1,18 @@
 import React from 'react';
 import { 
-  Printer, 
-  Edit3, 
   ZoomIn, 
   ZoomOut, 
-  RotateCcw, 
-  FileText,
-  CheckCircle2,
-  Maximize2
+  FileText
 } from 'lucide-react';
 
 interface PreviewToolbarProps {
   totalPages: number;
   zoom: number;
   onZoomChange: (newZoom: number) => void;
-  onReturnToEditor: () => void;
-  onPrint: () => void;
-  activeView: 'preview_a4' | 'solution_key';
-  onSwitchView: (view: 'preview_a4' | 'solution_key') => void;
+  onReturnToEditor?: () => void;
+  onPrint?: () => void;
+  activeView?: 'preview_a4' | 'solution_key';
+  onSwitchView?: (view: 'preview_a4' | 'solution_key') => void;
   paperSize?: string;
 }
 
@@ -25,10 +20,6 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   totalPages,
   zoom,
   onZoomChange,
-  onReturnToEditor,
-  onPrint,
-  activeView,
-  onSwitchView,
   paperSize = 'a4',
 }) => {
   const handleZoomIn = () => {
@@ -127,47 +118,6 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
             100%
           </button>
         </div>
-
-        {/* Right: Mode Toggles & Print Button */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Solution key quick toggle in preview */}
-          <button
-            type="button"
-            onClick={() => onSwitchView(activeView === 'preview_a4' ? 'solution_key' : 'preview_a4')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer border ${
-              activeView === 'solution_key'
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-2xs font-bold'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
-            }`}
-            title="Alternar entre examen en blanco y examen resuelto con claves"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Clave Docente</span>
-          </button>
-
-          {/* Print button */}
-          <button
-            type="button"
-            onClick={onPrint}
-            className="flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all shadow-xs cursor-pointer"
-            title="Imprimir o guardar como PDF"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Imprimir / PDF</span>
-          </button>
-
-          {/* Return to editor button */}
-          <button
-            type="button"
-            onClick={onReturnToEditor}
-            className="flex items-center gap-1 px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-700"
-            title="Regresar al modo de edición de preguntas"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">Editar</span>
-          </button>
-        </div>
-
       </div>
     </div>
   );
