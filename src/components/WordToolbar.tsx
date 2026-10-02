@@ -314,253 +314,258 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
         )}
 
         {activeTab === 'layout' && (
-          <div className="flex items-stretch gap-3 md:gap-4 text-xs py-1 overflow-x-auto">
-            {/* GRUPO 0: FORMATO DE HOJA */}
-            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <FileText className="w-3 h-3 text-slate-500" />
-                Formato de Hoja
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ paperSize: 'a4' })}
-                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
-                      exam.settings.paperSize === 'a4' || !exam.settings.paperSize
-                        ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="Hoja A4 estándar completa (210 × 297 mm)"
-                  >
-                    A4 Estándar
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ paperSize: 'a5_2in1' })}
-                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                      exam.settings.paperSize === 'a5_2in1'
-                        ? 'bg-emerald-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="A5 (2 en 1 A4 horizontal): Imprime 2 copias con línea de corte en medio. Ahorra 50% de papel."
-                  >
-                    <span>A5 (2 en 1 A4)</span>
-                    <span className={`text-[9px] px-1 py-0.2 rounded font-extrabold ${
-                      exam.settings.paperSize === 'a5_2in1' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-100 text-emerald-800'
-                    }`}>
-                      50% papel
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ paperSize: 'a5_single' })}
-                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
-                      exam.settings.paperSize === 'a5_single'
-                        ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="A5 Individual (148 × 210 mm) para papel cortado en media hoja"
-                  >
-                    A5 Individual
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* GRUPO 1: TIPOGRAFÍA */}
-            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <Type className="w-3 h-3 text-slate-500" />
-                Tipografía
-              </span>
-
-              <div className="flex items-center gap-2">
-                {/* Selector de Fuente */}
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                  <span className="text-slate-500 font-medium px-1.5 text-[11px]">Fuente:</span>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ fontFamily: 'sans' })}
-                    className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
-                      exam.settings.fontFamily === 'sans'
-                        ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="Tipografía Moderna (Sans-Serif)"
-                  >
-                    Sans
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ fontFamily: 'serif' })}
-                    className={`px-2 py-0.5 rounded text-xs font-serif transition-all cursor-pointer ${
-                      exam.settings.fontFamily === 'serif'
-                        ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="Tipografía Académica (Serif)"
-                  >
-                    Serif
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSettings({ fontFamily: 'mono' })}
-                    className={`px-2 py-0.5 rounded text-xs font-mono transition-all cursor-pointer ${
-                      exam.settings.fontFamily === 'mono'
-                        ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="Tipografía Técnica (Monospace)"
-                  >
-                    Mono
-                  </button>
-                </div>
-
-                {/* Selector de Tamaño */}
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                  <span className="text-slate-500 font-medium px-1.5 text-[11px]">Tamaño:</span>
-                  {(['sm', 'md', 'lg'] as const).map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => onUpdateSettings({ baseFontSize: size })}
-                      className={`px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer ${
-                        exam.settings.baseFontSize === size
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                      title={`Tamaño de fuente: ${size === 'sm' ? '10pt (Compacto)' : size === 'md' ? '11pt (Normal)' : '12.5pt (Grande)'}`}
-                    >
-                      {size === 'sm' ? 'Chico' : size === 'md' ? 'Normal' : 'Grande'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* GRUPO 2: PÁRRAFO & ESPACIADO */}
-            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <AlignJustify className="w-3 h-3 text-slate-500" />
-                Párrafo & Espaciado
-              </span>
-
-              <div className="flex items-center gap-2">
-                {/* Selector de Interlineado */}
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                  <span className="text-slate-500 font-medium px-1.5 text-[11px]">Interlineado:</span>
-                  {(['compact', 'normal', 'relaxed'] as const).map((spacing) => (
-                    <button
-                      key={spacing}
-                      type="button"
-                      onClick={() => onUpdateSettings({ lineSpacing: spacing })}
-                      className={`px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer ${
-                        (exam.settings.lineSpacing || 'normal') === spacing
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                      title={`Interlineado: ${spacing === 'compact' ? '1.0' : spacing === 'normal' ? '1.2' : '1.5'}`}
-                    >
-                      {spacing === 'compact' ? '1.0' : spacing === 'normal' ? '1.2' : '1.5'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* GRUPO 3: RECUADROS */}
-            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <Square className="w-3 h-3 text-slate-500" />
-                Recuadros
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onUpdateSettings({ showBorders: !exam.settings.showBorders })}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
-                    exam.settings.showBorders
-                      ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                  title="Mostrar u ocultar los bordes de recuadro alrededor de cada ejercicio"
-                >
-                  <Square className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Bordes en Bloques</span>
-                  {exam.settings.showBorders && <Check className="w-3 h-3 text-indigo-600 ml-0.5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* GRUPO 3.5: CALIFICACIÓN / PUNTAJE */}
-            <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <CheckSquare className="w-3 h-3 text-slate-500" />
-                Puntaje
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onUpdateSettings({ showPointsInPrint: exam.settings.showPointsInPrint === false ? true : false })}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
-                    exam.settings.showPointsInPrint !== false
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                  title="Activar o desactivar puntajes en los enunciados y en el examen"
-                >
-                  <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{exam.settings.showPointsInPrint !== false ? 'Puntaje Activo' : 'Sin Puntaje'}</span>
-                  {exam.settings.showPointsInPrint !== false && <Check className="w-3 h-3 text-emerald-600 ml-0.5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* GRUPO 4: ENCABEZADO */}
-            {onUpdateHeader && (
-              <div className="flex flex-col gap-1 shrink-0">
+          <div className="flex flex-col gap-2 text-xs py-1">
+            {/* FILA 1: Formato de Hoja + Tipografía */}
+            <div className="flex items-stretch gap-3 md:gap-4 flex-wrap">
+              {/* GRUPO 0: FORMATO DE HOJA */}
+              <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                   <FileText className="w-3 h-3 text-slate-500" />
-                  Encabezado
+                  Formato de Hoja
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Estilo:</span>
                     <button
                       type="button"
-                      onClick={() => onUpdateHeader({ headerStyle: 'boxed' })}
-                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
-                        exam.header.headerStyle !== 'modern'
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                      onClick={() => onUpdateSettings({ paperSize: 'a4' })}
+                      className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                        exam.settings.paperSize === 'a4' || !exam.settings.paperSize
+                          ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
-                      title="Estilo Clásico Institucional con recuadro"
+                      title="Hoja A4 estándar completa (210 × 297 mm)"
                     >
-                      Institucional
+                      A4 Estándar
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => onUpdateHeader({ headerStyle: 'modern' })}
-                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
-                        exam.header.headerStyle === 'modern'
-                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                      onClick={() => onUpdateSettings({ paperSize: 'a5_2in1' })}
+                      className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                        exam.settings.paperSize === 'a5_2in1'
+                          ? 'bg-emerald-600 text-white shadow-2xs'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
-                      title="Estilo Moderno sin recuadro pesado"
+                      title="A5 (2 en 1 A4 horizontal): Imprime 2 copias con línea de corte en medio. Ahorra 50% de papel."
                     >
-                      Moderno
+                      <span>A5 (2 en 1 A4)</span>
+                      <span className={`text-[9px] px-1 py-0.2 rounded font-extrabold ${
+                        exam.settings.paperSize === 'a5_2in1' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        50% papel
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ paperSize: 'a5_single' })}
+                      className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                        exam.settings.paperSize === 'a5_single'
+                          ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="A5 Individual (148 × 210 mm) para papel cortado en media hoja"
+                    >
+                      A5 Individual
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+
+              {/* GRUPO 1: TIPOGRAFÍA */}
+              <div className="flex flex-col gap-1 shrink-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <Type className="w-3 h-3 text-slate-500" />
+                  Tipografía
+                </span>
+
+                <div className="flex items-center gap-2">
+                  {/* Selector de Fuente */}
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Fuente:</span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ fontFamily: 'sans' })}
+                      className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                        exam.settings.fontFamily === 'sans'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Tipografía Moderna (Sans-Serif)"
+                    >
+                      Sans
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ fontFamily: 'serif' })}
+                      className={`px-2 py-0.5 rounded text-xs font-serif transition-all cursor-pointer ${
+                        exam.settings.fontFamily === 'serif'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Tipografía Académica (Serif)"
+                    >
+                      Serif
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ fontFamily: 'mono' })}
+                      className={`px-2 py-0.5 rounded text-xs font-mono transition-all cursor-pointer ${
+                        exam.settings.fontFamily === 'mono'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Tipografía Técnica (Monospace)"
+                    >
+                      Mono
+                    </button>
+                  </div>
+
+                  {/* Selector de Tamaño */}
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Tamaño:</span>
+                    {(['sm', 'md', 'lg'] as const).map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => onUpdateSettings({ baseFontSize: size })}
+                        className={`px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                          exam.settings.baseFontSize === size
+                            ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title={`Tamaño de fuente: ${size === 'sm' ? '10pt (Compacto)' : size === 'md' ? '11pt (Normal)' : '12.5pt (Grande)'}`}
+                      >
+                        {size === 'sm' ? 'Chico' : size === 'md' ? 'Normal' : 'Grande'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* FILA 2: Párrafo + Recuadros + Puntaje + Encabezado */}
+            <div className="flex items-stretch gap-3 md:gap-4 flex-wrap pt-1.5 border-t border-slate-100">
+              {/* GRUPO 2: PÁRRAFO & ESPACIADO */}
+              <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <AlignJustify className="w-3 h-3 text-slate-500" />
+                  Párrafo & Espaciado
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <span className="text-slate-500 font-medium px-1.5 text-[11px]">Interlineado:</span>
+                    {(['compact', 'normal', 'relaxed'] as const).map((spacing) => (
+                      <button
+                        key={spacing}
+                        type="button"
+                        onClick={() => onUpdateSettings({ lineSpacing: spacing })}
+                        className={`px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                          (exam.settings.lineSpacing || 'normal') === spacing
+                            ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title={`Interlineado: ${spacing === 'compact' ? '1.0' : spacing === 'normal' ? '1.2' : '1.5'}`}
+                      >
+                        {spacing === 'compact' ? '1.0' : spacing === 'normal' ? '1.2' : '1.5'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* GRUPO 3: RECUADROS */}
+              <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <Square className="w-3 h-3 text-slate-500" />
+                  Recuadros
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSettings({ showBorders: !exam.settings.showBorders })}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
+                      exam.settings.showBorders
+                        ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                    title="Mostrar u ocultar los bordes de recuadro alrededor de cada ejercicio"
+                  >
+                    <Square className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Bordes en Bloques</span>
+                    {exam.settings.showBorders && <Check className="w-3 h-3 text-indigo-600 ml-0.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* GRUPO 3.5: CALIFICACIÓN / PUNTAJE */}
+              <div className="flex flex-col gap-1 pr-3 border-r border-slate-200 shrink-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <CheckSquare className="w-3 h-3 text-slate-500" />
+                  Puntaje
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSettings({ showPointsInPrint: exam.settings.showPointsInPrint === false ? true : false })}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
+                      exam.settings.showPointsInPrint !== false
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                    title="Activar o desactivar puntajes en los enunciados y en el examen"
+                  >
+                    <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{exam.settings.showPointsInPrint !== false ? 'Puntaje Activo' : 'Sin Puntaje'}</span>
+                    {exam.settings.showPointsInPrint !== false && <Check className="w-3 h-3 text-emerald-600 ml-0.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* GRUPO 4: ENCABEZADO */}
+              {onUpdateHeader && (
+                <div className="flex flex-col gap-1 shrink-0">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                    <FileText className="w-3 h-3 text-slate-500" />
+                    Encabezado
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                      <span className="text-slate-500 font-medium px-1.5 text-[11px]">Estilo:</span>
+                      <button
+                        type="button"
+                        onClick={() => onUpdateHeader({ headerStyle: 'boxed' })}
+                        className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                          exam.header.headerStyle !== 'modern'
+                            ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title="Estilo Clásico Institucional con recuadro"
+                      >
+                        Institucional
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onUpdateHeader({ headerStyle: 'modern' })}
+                        className={`px-2 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                          exam.header.headerStyle === 'modern'
+                            ? 'bg-white text-indigo-700 shadow-2xs font-bold ring-1 ring-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title="Estilo Moderno sin recuadro pesado"
+                      >
+                        Moderno
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

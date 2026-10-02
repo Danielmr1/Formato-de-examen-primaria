@@ -78,13 +78,14 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
         <div className="border border-slate-700/90 rounded-lg p-2 bg-white text-xs">
           {/* Top row: Logo + Institution / Exam Title + Score Box */}
           <div className="flex items-center justify-between gap-2 border-b border-slate-300 pb-1.5 mb-1.5">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+            {/* Left: Logo */}
+            <div className="shrink-0 w-12 sm:w-14 flex items-center justify-start min-h-[32px]">
               {header.logoUrl && (
                 <div className="relative group/logo shrink-0">
                   <img
                     src={header.logoUrl}
                     alt="Logo"
-                    className="max-h-8 max-w-12 object-contain rounded"
+                    className="max-h-8 max-w-12 sm:max-w-14 object-contain rounded"
                   />
                   {!isPrintMode && (
                     <button
@@ -97,35 +98,39 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                   )}
                 </div>
               )}
-              <div className="min-w-0 flex-1">
-                {header.institutionName ? (
-                  <div className="font-extrabold text-[11px] uppercase tracking-wide text-slate-800 truncate">
-                    {header.institutionName}
-                  </div>
-                ) : null}
-                {isPrintMode ? (
-                  <div className="font-bold text-xs text-indigo-900 truncate">
-                    {header.examTitle || 'EVALUACIÓN'}
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    value={header.examTitle || ''}
-                    onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
-                    placeholder="TÍTULO DE LA EVALUACIÓN"
-                    className="font-bold text-xs text-indigo-900 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate"
-                  />
-                )}
-              </div>
             </div>
 
-            {/* Score Box compact */}
-            {header.showScoreBox && (
-              <div className="w-12 h-9 border border-slate-800 rounded flex flex-col items-center justify-center shrink-0 bg-white">
-                <span className="text-[8px] font-black uppercase text-slate-700 leading-none">NOTA</span>
-                <span className="text-[9px] text-slate-400 font-bold leading-none mt-0.5">/{totalScore}</span>
-              </div>
-            )}
+            {/* Center: Institution & Exam Title (ALWAYS CENTERED) */}
+            <div className="flex-1 min-w-0 flex flex-col items-center justify-center text-center px-1">
+              {header.institutionName ? (
+                <div className="font-extrabold text-[11px] uppercase tracking-wide text-slate-800 truncate text-center w-full">
+                  {header.institutionName}
+                </div>
+              ) : null}
+              {isPrintMode ? (
+                <div className="font-bold text-xs sm:text-sm text-indigo-950 truncate text-center w-full uppercase">
+                  {header.examTitle || 'EVALUACIÓN'}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={header.examTitle || ''}
+                  onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
+                  placeholder="TÍTULO DE LA EVALUACIÓN"
+                  className="font-bold text-xs sm:text-sm text-indigo-950 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate text-center uppercase"
+                />
+              )}
+            </div>
+
+            {/* Right: Score Box or spacer to balance centering */}
+            <div className="shrink-0 w-12 sm:w-14 flex items-center justify-end">
+              {header.showScoreBox && (
+                <div className="w-12 h-9 border border-slate-800 rounded flex flex-col items-center justify-center shrink-0 bg-white">
+                  <span className="text-[8px] font-black uppercase text-slate-700 leading-none">NOTA</span>
+                  <span className="text-[9px] text-slate-400 font-bold leading-none mt-0.5">/{totalScore}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Bottom row: Estudiante, Grado, Fecha (Docente se omite en A5 para ahorrar espacio) */}
@@ -169,29 +174,31 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
             {/* Left Main Content */}
             <div className="flex-1 min-w-0 flex flex-col justify-between">
               {/* Top row: Institution, Exam title and Optional Logo */}
-              <div className="flex items-center gap-3 border-b border-slate-300/80 pb-2">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-300/80 pb-2">
                 
-                {/* Logo or Upload button */}
-                {header.logoUrl ? (
-                  <div className="relative group/logo shrink-0">
-                    <img
-                      src={header.logoUrl}
-                      alt="Logo de la Institución"
-                      className="max-h-14 max-w-20 object-contain rounded"
-                    />
-                    {!isPrintMode && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 bg-black/50 text-white rounded text-[10px] font-bold opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
-                      >
-                        Cambiar
-                      </button>
-                    )}
-                  </div>
-                ) : null}
+                {/* Logo or Left spacer */}
+                <div className={`shrink-0 ${header.logoUrl ? 'w-16 sm:w-20' : ''} flex items-center justify-start`}>
+                  {header.logoUrl ? (
+                    <div className="relative group/logo shrink-0">
+                      <img
+                        src={header.logoUrl}
+                        alt="Logo de la Institución"
+                        className="max-h-14 max-w-16 sm:max-w-20 object-contain rounded"
+                      />
+                      {!isPrintMode && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 bg-black/50 text-white rounded text-[10px] font-bold opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                        >
+                          Cambiar
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-center">
                   {/* Institution Name */}
                   {hasInstitutionName(header.institutionName) ? (
                     isPrintMode ? (
@@ -244,6 +251,11 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                     </>
                   )}
                 </div>
+
+                {/* Right spacer to balance center alignment when logo is present */}
+                {header.logoUrl && (
+                  <div className="shrink-0 w-16 sm:w-20 pointer-events-none" aria-hidden="true" />
+                )}
               </div>
 
               {/* Student Name Field */}
@@ -362,27 +374,30 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
             {/* Left Content Area */}
             <div className="flex-1 min-w-0 flex flex-col justify-between">
               {/* Institution, Title and Optional Logo */}
-              <div className="flex items-center gap-3">
-                {header.logoUrl ? (
-                  <div className="relative group/logo shrink-0">
-                    <img
-                      src={header.logoUrl}
-                      alt="Logo de la Institución"
-                      className="max-h-14 max-w-20 object-contain rounded"
-                    />
-                    {!isPrintMode && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 bg-black/50 text-white rounded text-[10px] font-bold opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
-                      >
-                        Cambiar
-                      </button>
-                    )}
-                  </div>
-                ) : null}
+              <div className="flex items-center justify-between gap-3">
+                {/* Logo or Left spacer */}
+                <div className={`shrink-0 ${header.logoUrl ? 'w-16 sm:w-20' : ''} flex items-center justify-start`}>
+                  {header.logoUrl ? (
+                    <div className="relative group/logo shrink-0">
+                      <img
+                        src={header.logoUrl}
+                        alt="Logo de la Institución"
+                        className="max-h-14 max-w-16 sm:max-w-20 object-contain rounded"
+                      />
+                      {!isPrintMode && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 bg-black/50 text-white rounded text-[10px] font-bold opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                        >
+                          Cambiar
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-center">
                   {/* Institution Name */}
                   {hasInstitutionName(header.institutionName) ? (
                     isPrintMode ? (
@@ -435,6 +450,11 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                     </>
                   )}
                 </div>
+
+                {/* Right spacer to balance center alignment when logo is present */}
+                {header.logoUrl && (
+                  <div className="shrink-0 w-16 sm:w-20 pointer-events-none" aria-hidden="true" />
+                )}
               </div>
 
               {/* Student Name Field on its own clean row */}
