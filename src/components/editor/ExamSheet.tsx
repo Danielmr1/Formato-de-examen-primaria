@@ -93,14 +93,34 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   // Medir la altura física real de las preguntas y encabezado (sin la altura forzada de la hoja)
   useEffect(() => {
     if (!contentRef.current) return;
+    
+    const updateHeight = () => {
+      if (contentRef.current) {
+        const h = contentRef.current.getBoundingClientRect().height;
+        if (h > 0) setContentHeight(h);
+      }
+    };
+
+    updateHeight();
+    const rafId = requestAnimationFrame(updateHeight);
+    const timeoutId = setTimeout(updateHeight, 150);
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setContentHeight(entry.contentRect.height);
+        if (entry.contentRect.height > 0) {
+          setContentHeight(entry.contentRect.height);
+        }
       }
     });
+
     observer.observe(contentRef.current);
-    return () => observer.disconnect();
-  }, [exam.blocks, exam.header, exam.settings]);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [exam.blocks, exam.header, exam.settings, activeView]);
 
   const isA5 = exam.settings.paperSize === 'a5_2in1' || exam.settings.paperSize === 'a5_single';
   const is2in1 = exam.settings.paperSize === 'a5_2in1';
@@ -416,7 +436,13 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
       {isPreviewMode && (
         <div className="mt-8 pt-3 border-t border-slate-200/90 flex items-center justify-between text-[11px] text-slate-400 select-none print:hidden">
           <span>{exam.header.institutionName || 'Evaluación Escolar'}</span>
-          <span className="font-semibold text-slate-500">Formato A4 • {estimatedPages} {estimatedPages === 1 ? 'página' : 'páginas'}</span>
+          <span className="font-semibold text-slate-500">
+            {is2in1 
+              ? 'Formato A5 (2 en 1)' 
+              : exam.settings.paperSize === 'a5_single' 
+              ? 'Formato A5 Individual' 
+              : 'Formato A4'} • {estimatedPages} {estimatedPages === 1 ? 'página' : 'páginas'}
+          </span>
         </div>
       )}
     </div>
