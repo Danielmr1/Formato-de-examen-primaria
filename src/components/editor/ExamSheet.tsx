@@ -284,7 +284,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   return (
     <div 
       ref={sheetRef}
-      className={`page-sheet relative bg-white transition-all ${getSheetClasses()}`}
+      className={`page-sheet relative bg-white transition-all ${getSheetClasses()} ${exam.settings.colorMode === 'grayscale' ? 'exam-grayscale-mode' : ''}`}
     >
       {/* Indicadores visuales de corte de página A4/A5 (Solo en pantalla en modo Vista Previa) */}
       {isPreviewMode && estimatedPages > 1 && (

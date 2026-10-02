@@ -161,7 +161,7 @@ export function validateExamJson(data: any): ValidationResult {
       logoUrl: typeof data.header.logoUrl === 'string' ? data.header.logoUrl : ''
     },
     settings: {
-      paperSize: ['a4', 'letter'].includes(data.settings?.paperSize) ? data.settings.paperSize : 'a4',
+      paperSize: ['a4', 'letter', 'a5_2in1', 'a5_single'].includes(data.settings?.paperSize) ? data.settings.paperSize : 'a4',
       fontFamily: ['sans', 'serif', 'mono'].includes(data.settings?.fontFamily) ? data.settings.fontFamily : 'sans',
       baseFontSize: ['sm', 'md', 'lg'].includes(data.settings?.baseFontSize) ? data.settings.baseFontSize : 'md',
       gridColumns: 12,
@@ -169,7 +169,8 @@ export function validateExamJson(data: any): ValidationResult {
       showBorders: data.settings?.showBorders !== false,
       twoColumnLayout: Boolean(data.settings?.twoColumnLayout),
       statementJustify: true,
-      lineSpacing: ['compact', 'normal', 'relaxed'].includes(data.settings?.lineSpacing) ? data.settings.lineSpacing : 'normal'
+      lineSpacing: ['compact', 'normal', 'relaxed'].includes(data.settings?.lineSpacing) ? data.settings.lineSpacing : 'normal',
+      colorMode: ['color', 'grayscale'].includes(data.settings?.colorMode) ? data.settings.colorMode : 'color'
     },
     blocks: validBlocks
   };

@@ -180,6 +180,67 @@
   }
 }
 
+/* ========================================================
+   MODO BLANCO Y NEGRO / FOTOCOPIADORA ESCOLAR (B&N)
+   Optimizado para vista previa y salida sin consumo excesivo de tóner
+   ======================================================== */
+.exam-grayscale-mode img {
+  filter: grayscale(100%) contrast(110%) !important;
+}
+
+.exam-grayscale-mode .border-indigo-600,
+.exam-grayscale-mode .border-indigo-500,
+.exam-grayscale-mode .border-indigo-400,
+.exam-grayscale-mode .border-indigo-300,
+.exam-grayscale-mode .border-indigo-200 {
+  border-color: #0f172a !important;
+}
+
+.exam-grayscale-mode .border-amber-200,
+.exam-grayscale-mode .border-amber-300,
+.exam-grayscale-mode .border-blue-200,
+.exam-grayscale-mode .border-purple-200 {
+  border-color: #334155 !important;
+}
+
+.exam-grayscale-mode .text-indigo-950,
+.exam-grayscale-mode .text-indigo-900,
+.exam-grayscale-mode .text-indigo-800,
+.exam-grayscale-mode .text-indigo-700,
+.exam-grayscale-mode .text-indigo-600,
+.exam-grayscale-mode .text-amber-900,
+.exam-grayscale-mode .text-amber-800,
+.exam-grayscale-mode .text-blue-900,
+.exam-grayscale-mode .text-blue-800,
+.exam-grayscale-mode .text-purple-900,
+.exam-grayscale-mode .text-emerald-800,
+.exam-grayscale-mode .text-emerald-700 {
+  color: #0f172a !important;
+}
+
+.exam-grayscale-mode .bg-indigo-50,
+.exam-grayscale-mode .bg-indigo-50\/70,
+.exam-grayscale-mode .bg-indigo-50\/50,
+.exam-grayscale-mode .bg-amber-50,
+.exam-grayscale-mode .bg-amber-50\/40,
+.exam-grayscale-mode .bg-amber-50\/50,
+.exam-grayscale-mode .bg-blue-50,
+.exam-grayscale-mode .bg-blue-50\/50,
+.exam-grayscale-mode .bg-purple-50,
+.exam-grayscale-mode .bg-emerald-50 {
+  background-color: #ffffff !important;
+}
+
+.exam-grayscale-mode .bg-indigo-600 {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.exam-grayscale-mode .bg-indigo-100 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
 /* Mixed Numbers & Stacked Fractions */
 .mixed-number {
   display: inline-flex;

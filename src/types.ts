@@ -98,6 +98,7 @@ export interface ExamDocument {
     twoColumnLayout: boolean;
     statementJustify?: boolean;
     lineSpacing?: 'compact' | 'normal' | 'relaxed';
+    colorMode?: 'color' | 'grayscale';
   };
 }
 

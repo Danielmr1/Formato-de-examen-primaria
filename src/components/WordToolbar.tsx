@@ -13,7 +13,9 @@ import {
   Check,
   FileText,
   CheckSquare,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Palette,
+  Printer
 } from 'lucide-react';
 import { BlockWidth, ExamDocument, QuestionType } from '../types';
 import { optimizeImage } from '../utils/imageOptimizer';
@@ -104,23 +106,60 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
           </button>
         </div>
 
-        {/* Active Sheet Format Summary Badge */}
-        <div className="hidden md:flex items-center gap-2 py-1 text-[11px] text-slate-500 font-medium select-none">
-          <span className="px-2 py-0.5 rounded-md bg-indigo-50/80 border border-indigo-200/80 font-bold text-indigo-700 tracking-wide text-[10px]">
-            {exam.settings.paperSize === 'a5_2in1'
-              ? 'A5 (2 en 1)'
-              : exam.settings.paperSize === 'a5_single'
-              ? 'A5'
-              : 'A4'}
-          </span>
-          <span className="text-slate-300">•</span>
-          <span className="font-semibold text-slate-700">
-            {exam.settings.fontFamily === 'serif' ? 'Serif' : exam.settings.fontFamily === 'mono' ? 'Mono' : 'Sans'}
-          </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-slate-600">
-            {exam.settings.baseFontSize === 'sm' ? '10pt' : exam.settings.baseFontSize === 'lg' ? '12.5pt' : '11pt'}
-          </span>
+        {/* Quick Toggles: Paper Size & Color Mode */}
+        <div className="hidden md:flex items-center gap-1.5 py-1 text-[11px] select-none">
+          {/* Quick Paper Size Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const currentSize = exam.settings.paperSize || 'a4';
+              const nextSize =
+                currentSize === 'a4'
+                  ? 'a5_2in1'
+                  : currentSize === 'a5_2in1'
+                  ? 'a5_single'
+                  : 'a4';
+              onUpdateSettings({ paperSize: nextSize });
+            }}
+            className="px-2 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/90 font-bold text-indigo-700 tracking-wide text-[10px] transition-all cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs"
+            title="Clic rápido para cambiar tamaño: A4 → A5 (2 en 1) → A5 Individual"
+          >
+            <FileText className="w-3 h-3 text-indigo-600" />
+            <span>
+              {exam.settings.paperSize === 'a5_2in1'
+                ? 'A5 (2 en 1)'
+                : exam.settings.paperSize === 'a5_single'
+                ? 'A5'
+                : 'A4'}
+            </span>
+          </button>
+
+          {/* Quick Color Mode Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextMode = exam.settings.colorMode === 'grayscale' ? 'color' : 'grayscale';
+              onUpdateSettings({ colorMode: nextMode });
+            }}
+            className={`px-2 py-0.5 rounded-md border font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs ${
+              exam.settings.colorMode === 'grayscale'
+                ? 'bg-slate-800 text-white border-slate-700 hover:bg-slate-700'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200/90 hover:bg-emerald-100'
+            }`}
+            title="Clic rápido para alternar modo: Color ↔ Blanco y Negro (Fotocopia)"
+          >
+            {exam.settings.colorMode === 'grayscale' ? (
+              <>
+                <Printer className="w-3 h-3 text-slate-300" />
+                <span>B&N</span>
+              </>
+            ) : (
+              <>
+                <Palette className="w-3 h-3 text-emerald-600" />
+                <span>Color</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -384,6 +423,37 @@ export const WordToolbar: React.FC<WordToolbarProps> = ({
                       title="A5 Individual (148 × 210 mm) para papel cortado en media hoja"
                     >
                       A5 Individual
+                    </button>
+                  </div>
+
+                  {/* Modo de Impresión / Color */}
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ colorMode: 'color' })}
+                      className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        exam.settings.colorMode !== 'grayscale'
+                          ? 'bg-white text-indigo-700 shadow-2xs ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Modo Color: Mantiene logos y acentos en su color original"
+                    >
+                      <Palette className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Color</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onUpdateSettings({ colorMode: 'grayscale' })}
+                      className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        exam.settings.colorMode === 'grayscale'
+                          ? 'bg-slate-800 text-white shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Modo Blanco y Negro / Fotocopia: Convierte logo a escala de grises, fondos limpios y máximo contraste para fotocopiadoras"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-slate-300" />
+                      <span>B&N (Fotocopia)</span>
                     </button>
                   </div>
                 </div>

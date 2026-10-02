@@ -42,7 +42,8 @@ export const createBlankExam = (id?: string): ExamDocument => ({
     showBorders: true,
     twoColumnLayout: false,
     statementJustify: true,
-    lineSpacing: 'normal'
+    lineSpacing: 'normal',
+    colorMode: 'color'
   },
   blocks: []
 });
