@@ -14,12 +14,14 @@ const getMaxCharsForMatching = (cols: number = 12) => {
 interface MatchingPairsProps {
   block: ExamBlock;
   isEditor: boolean;
+  isSolutionKey?: boolean;
   onUpdateBlock: (updated: Partial<ExamBlock>) => void;
 }
 
 export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   block,
   isEditor,
+  isSolutionKey = false,
   onUpdateBlock
 }) => {
   const pairs = block.matchingPairs || [];
@@ -39,10 +41,24 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
     });
   };
 
+  const handleSetMatchIndex = (pairId: string, matchIndex: number | undefined) => {
+    onUpdateBlock({
+      matchingPairs: pairs.map(p => p.id === pairId ? { ...p, correctMatchIndex: matchIndex } : p)
+    });
+  };
+
   const handleDeletePair = (pairId: string) => {
     if (pairs.length <= 2) return;
+    const remaining = pairs.filter(p => p.id !== pairId);
+    // Ajustar o limpiar índices que superen el nuevo límite
+    const sanitized = remaining.map(p => {
+      if (p.correctMatchIndex && p.correctMatchIndex > remaining.length) {
+        return { ...p, correctMatchIndex: undefined };
+      }
+      return p;
+    });
     onUpdateBlock({
-      matchingPairs: pairs.filter(p => p.id !== pairId)
+      matchingPairs: sanitized
     });
   };
 
@@ -94,6 +110,13 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
           {pairs.map((p, idx) => {
             const isRightEmpty = isEditor && (!p.rightText || p.rightText.trim() === '');
             const letter = String.fromCharCode(65 + idx);
+            const matchIndex = p.correctMatchIndex;
+            const hasMatch = matchIndex !== undefined && matchIndex > 0;
+
+            // Verificar si hay número duplicado
+            const allAssigned = pairs.map(item => item.correctMatchIndex).filter(Boolean);
+            const isDuplicate = hasMatch && allAssigned.filter(m => m === matchIndex).length > 1;
+
             return (
               <div 
                 key={p.id} 
@@ -103,9 +126,68 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                 }`}
               >
-                <span className="matching-paren-box px-1.5 py-0.5 rounded font-bold text-slate-500 text-xs border border-dashed border-slate-300 shrink-0">
-                  ( &nbsp; )
+                {/* Modo Impresión (para alumnos sale vacío; para clave docente sale con el número en verde) */}
+                <span className="matching-paren-box hidden print:inline-flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                  ( {isSolutionKey && hasMatch ? <strong className="font-extrabold text-emerald-800">{matchIndex}</strong> : <>&nbsp;&nbsp;&nbsp;</>} )
                 </span>
+
+                {/* Modo Pantalla: Clave Docente */}
+                {isSolutionKey ? (
+                  <div 
+                    className="print:hidden flex items-center justify-center font-black text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-400 shrink-0 shadow-2xs select-none"
+                    title={`Respuesta correcta: Elemento ${matchIndex || 'sin asignar'}`}
+                  >
+                    ( {hasMatch ? matchIndex : '?'} )
+                  </div>
+                ) : isEditor ? (
+                  /* Modo Pantalla: Editor Interactivo con selector en el paréntesis */
+                  <div 
+                    className={`print:hidden flex items-center justify-center font-bold text-xs rounded border transition-colors shrink-0 px-1 py-0.5 ${
+                      isDuplicate
+                        ? 'bg-rose-50 text-rose-700 border-rose-300 ring-1 ring-rose-200'
+                        : hasMatch 
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold shadow-2xs' 
+                        : 'bg-white text-slate-400 border-dashed border-slate-300 hover:border-indigo-400'
+                    }`}
+                    title={
+                      isDuplicate 
+                        ? '¡Número duplicado! Dos definiciones apuntan al mismo elemento.' 
+                        : hasMatch 
+                        ? `Elemento ${matchIndex} asignado como clave correcta. Haz clic para cambiarlo.`
+                        : 'Haz clic aquí para seleccionar el número de elemento correspondiente (Clave Docente)'
+                    }
+                  >
+                    <span className="text-slate-400 select-none">(</span>
+                    <select
+                      value={matchIndex || ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? undefined : Number(e.target.value);
+                        handleSetMatchIndex(p.id, val);
+                      }}
+                      className={`bg-transparent text-center font-extrabold text-xs cursor-pointer focus:outline-hidden appearance-none px-0.5 ${
+                        isDuplicate 
+                          ? 'text-rose-700' 
+                          : hasMatch 
+                          ? 'text-emerald-800' 
+                          : 'text-slate-400 hover:text-indigo-600'
+                      }`}
+                    >
+                      <option value="">--</option>
+                      {pairs.map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-slate-400 select-none">)</span>
+                  </div>
+                ) : (
+                  /* Modo Pantalla: Estudiante / Lectura */
+                  <span className="print:hidden font-bold text-slate-500 text-xs shrink-0 select-none">
+                    ( &nbsp;&nbsp;&nbsp; )
+                  </span>
+                )}
+
                 <span className={`font-bold text-xs shrink-0 ${isRightEmpty ? 'text-amber-900' : 'text-slate-700'}`}>
                   {letter}.
                 </span>

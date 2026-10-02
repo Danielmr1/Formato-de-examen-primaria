@@ -127,8 +127,17 @@ export const App: React.FC = () => {
         }
       } else if (block.type === 'matching') {
         const hasEmptyMatch = block.matchingPairs && block.matchingPairs.some(p => !p.leftText?.trim() || !p.rightText?.trim());
+        const hasMissingKey = !block.matchingPairs || block.matchingPairs.length === 0 || block.matchingPairs.some(p => !p.correctMatchIndex);
+        const matchIndices = (block.matchingPairs || []).map(p => p.correctMatchIndex).filter(Boolean) as number[];
+        const hasDuplicateIndices = new Set(matchIndices).size !== matchIndices.length;
+
         if (hasEmptyMatch) {
-          issues.push(`${qNum} (Relacionar): Tiene pares incompletos.`);
+          issues.push(`${qNum} (Relacionar): Tiene elementos o definiciones vacías.`);
+        }
+        if (hasMissingKey) {
+          issues.push(`${qNum} (Relacionar): Falta asignar el número de relación en los paréntesis.`);
+        } else if (hasDuplicateIndices) {
+          issues.push(`${qNum} (Relacionar): Hay números de relación repetidos asignados.`);
         }
       }
     });

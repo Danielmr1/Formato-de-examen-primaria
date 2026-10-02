@@ -25,6 +25,7 @@ export interface MatchingPair {
   id: string;
   leftText: string;
   rightText: string;
+  correctMatchIndex?: number;
 }
 
 export interface FigureData {

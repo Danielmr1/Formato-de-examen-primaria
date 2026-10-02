@@ -158,6 +158,9 @@ export function useExamState() {
       if (b.type === 'multiple_choice') {
         return !b.options || b.options.length === 0 || !b.options.some(o => o.isCorrect);
       }
+      if (b.type === 'matching') {
+        return !b.matchingPairs || b.matchingPairs.length === 0 || b.matchingPairs.some(p => !p.correctMatchIndex);
+      }
       return false;
     }).length;
   }, [exam.blocks]);

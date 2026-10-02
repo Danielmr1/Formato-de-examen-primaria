@@ -336,6 +336,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
           <MatchingPairs
             block={block}
             isEditor={isEditor}
+            isSolutionKey={isSolutionKey}
             onUpdateBlock={onUpdateBlock}
           />
         )}
