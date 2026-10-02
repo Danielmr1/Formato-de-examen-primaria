@@ -77,16 +77,18 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   const handleAddOption = () => {
     const currentOptions = block.options || [];
     if (currentOptions.length >= 5) return;
-    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     const nextIndex = currentOptions.length;
-    const label = letters[nextIndex] || `${nextIndex + 1}`;
     const newOpt = {
       id: `opt-${Date.now()}-${nextIndex}`,
-      label: label,
-      text: `Alternativa ${label}`,
+      label: String.fromCharCode(65 + nextIndex),
+      text: '',
     };
+    const updatedOptions = [...currentOptions, newOpt].map((opt, idx) => ({
+      ...opt,
+      label: String.fromCharCode(65 + idx)
+    }));
     onUpdateBlock({
-      options: [...currentOptions, newOpt]
+      options: updatedOptions
     });
   };
 
@@ -252,7 +254,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
             title={(block.options?.length || 0) < 5 ? 'Añadir alternativa' : 'Límite de 5 alternativas alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Alternativa (${block.options?.length || 0}/5)</span>
+            <span>Alternativa ({block.options?.length || 0}/5)</span>
           </button>
         )}
 
@@ -270,7 +272,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
             title={(block.trueFalseOptions?.length || 0) < 5 ? 'Añadir afirmación' : 'Límite de 5 afirmaciones alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Afirmación (${block.trueFalseOptions?.length || 0}/5)</span>
+            <span>Afirmación ({block.trueFalseOptions?.length || 0}/5)</span>
           </button>
         )}
 
@@ -288,7 +290,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
             title={(block.matchingPairs?.length || 0) < 5 ? 'Añadir par' : 'Límite de 5 parejas alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Par (${block.matchingPairs?.length || 0}/5)</span>
+            <span>Par ({block.matchingPairs?.length || 0}/5)</span>
           </button>
         )}
 
@@ -338,7 +340,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Alternativa (${block.options?.length || 0}/5)</span>
+                      <span>Alternativa ({block.options?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
@@ -356,7 +358,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Afirmación (${block.trueFalseOptions?.length || 0}/5)</span>
+                      <span>Afirmación ({block.trueFalseOptions?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
@@ -374,7 +376,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Par (${block.matchingPairs?.length || 0}/5)</span>
+                      <span>Par ({block.matchingPairs?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
