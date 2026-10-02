@@ -322,7 +322,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
           <>
             <div className="mb-3 px-3 py-1.5 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center justify-between shadow-2xs select-none print:hidden">
               <span className="font-semibold">
-                📄 Modo A5 (2 exámenes por hoja A4): Aquí editas tu prueba en media hoja. Al previsualizar o imprimir se duplicará lado a lado con línea de corte.
+                📄 Modo A5 (2 exámenes por hoja A4): Aquí editas tu prueba en media hoja. Al previsualizar o imprimir se duplicará lado a lado.
               </span>
               <span className="text-[10px] font-extrabold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded">
                 Ahorro 50%
@@ -332,20 +332,14 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
             {/* Modo Impresión directa desde editor */}
             <div className="hidden print:grid grid-cols-2 gap-6 relative w-full">
               <div className="pr-3">{renderExamBody(false)}</div>
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l-2 border-dashed border-slate-400 select-none pointer-events-none py-2 flex flex-col justify-between items-center text-[10px] text-slate-500">
-                <span className="bg-white px-1">✂ corte</span>
-                <span className="bg-white px-1">✂ corte</span>
-              </div>
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
               <div className="pl-3">{renderExamBody(true)}</div>
             </div>
           </>
         ) : (
           <div className="grid grid-cols-2 gap-6 relative w-full">
             <div className="pr-3">{renderExamBody(false)}</div>
-            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l-2 border-dashed border-slate-400 select-none pointer-events-none py-2 flex flex-col justify-between items-center text-[10px] text-slate-500">
-              <span className="bg-white px-1 shadow-2xs rounded border border-slate-200">✂ corte</span>
-              <span className="bg-white px-1 shadow-2xs rounded border border-slate-200">✂ corte</span>
-            </div>
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
             <div className="pl-3">{renderExamBody(true)}</div>
           </div>
         )

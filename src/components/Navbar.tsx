@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v5.3
+              v5.4
             </span>
           </div>
           
