@@ -137,149 +137,167 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
     return 'w-full max-w-[794px] min-h-[1123px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-5 sm:p-7 md:p-8 my-3';
   };
 
-  const renderExamBody = (isDuplicateCopy: boolean = false) => (
-    <div 
-      ref={!isDuplicateCopy ? contentRef : undefined} 
-      className="w-full flex flex-col bg-white"
-      onClick={(e) => {
-        if (!isDuplicateCopy && e.target === e.currentTarget) {
-          setSelectedBlockId(null);
-        }
-      }}
-    >
-      {/* Institutional Header */}
-      <HeaderEditor
-        header={exam.header}
-        onUpdateHeader={!isDuplicateCopy ? onUpdateHeader : () => {}}
-        isPrintMode={isPreviewMode || isDuplicateCopy}
-        totalScore={totalPoints}
-        isA5={isA5}
-      />
+  interface RenderBodyProps {
+    isPrintOnly?: boolean;
+    isDuplicateCopy?: boolean;
+    forceCleanView?: boolean;
+  }
 
-      {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
-      <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${activeView === 'editor' && !isDuplicateCopy ? 'pt-4' : ''}`}>
-        {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
-          if (segment.type === 'full' && segment.fullBlock) {
-            const { block, index: idx } = segment.fullBlock;
-            return (
-              <div key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}`} className="w-full">
-                <BlockItem
-                  block={block}
-                  index={idx}
-                  totalBlocks={exam.blocks.length}
-                  rightNeighbor={undefined}
-                  onResizeWidthPair={onResizeWidthPair}
-                  onUpdateBlock={!isDuplicateCopy ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
-                  onDeleteBlock={!isDuplicateCopy ? () => onDeleteBlock(block.id) : () => {}}
-                  onDuplicateBlock={!isDuplicateCopy ? () => onDuplicateBlock(block.id) : () => {}}
-                  onMoveUp={!isDuplicateCopy ? () => onMoveUp(idx) : () => {}}
-                  onMoveDown={!isDuplicateCopy ? () => onMoveDown(idx) : () => {}}
-                  onOpenFigureModal={!isDuplicateCopy ? () => onOpenFigureModalForBlock(block.id) : () => {}}
-                  viewMode={isDuplicateCopy ? 'preview_a4' : activeView}
-                  showBorders={exam.settings.showBorders}
-                  baseFontSize={exam.settings.baseFontSize}
-                  statementJustify={exam.settings.statementJustify}
-                  lineSpacing={exam.settings.lineSpacing}
-                  isMasonryColumn={true}
-                  isSelected={!isDuplicateCopy && selectedBlockId === block.id}
-                  onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
-                  isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
-                  showPoints={exam.settings.showPointsInPrint !== false}
-                />
-              </div>
-            );
+  const renderExamBody = ({
+    isPrintOnly = false,
+    isDuplicateCopy = false,
+    forceCleanView = false,
+  }: RenderBodyProps = {}) => {
+    const isCleanMode = forceCleanView || isPrintOnly || isPreviewMode || isDuplicateCopy;
+    const isInteractive = !isCleanMode && activeView === 'editor';
+    const effectiveViewMode = activeView === 'solution_key' 
+      ? 'solution_key' 
+      : (isInteractive ? 'editor' : 'preview_a4');
+
+    return (
+      <div 
+        ref={!isDuplicateCopy && !isPrintOnly ? contentRef : undefined} 
+        className="w-full flex flex-col bg-white"
+        onClick={(e) => {
+          if (isInteractive && e.target === e.currentTarget) {
+            setSelectedBlockId(null);
           }
+        }}
+      >
+        {/* Institutional Header */}
+        <HeaderEditor
+          header={exam.header}
+          onUpdateHeader={isInteractive ? onUpdateHeader : () => {}}
+          isPrintMode={isCleanMode}
+          totalScore={totalPoints}
+          isA5={isA5}
+        />
 
-          if (segment.type === 'split') {
-            const leftCols = segment.leftWidthCols || 6;
-            const rightCols = 12 - leftCols;
-            const firstRight = segment.rightColumn?.[0];
-
-            return (
-              <div key={`split-${segIdx}-${isDuplicateCopy ? 'dup' : 'orig'}`} className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start">
-                {/* Left Column */}
-                <div className={`col-span-12 ${getColSpanClassSafe(leftCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
-                  {segment.leftColumn?.map(({ block, index: idx }, leftIdx) => {
-                    const pairedRight = segment.rightColumn?.[leftIdx] || firstRight;
-                    const blockSynced = { ...block, width: leftCols };
-                    return (
-                      <BlockItem
-                        key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}`}
-                        block={blockSynced}
-                        index={idx}
-                        totalBlocks={exam.blocks.length}
-                        rightNeighbor={
-                          pairedRight ? {
-                            id: pairedRight.block.id,
-                            titleNumber: pairedRight.block.titleNumber,
-                            width: rightCols
-                          } : undefined
-                        }
-                        onResizeWidthPair={onResizeWidthPair}
-                        onUpdateBlock={!isDuplicateCopy ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
-                        onDeleteBlock={!isDuplicateCopy ? () => onDeleteBlock(block.id) : () => {}}
-                        onDuplicateBlock={!isDuplicateCopy ? () => onDuplicateBlock(block.id) : () => {}}
-                        onMoveUp={!isDuplicateCopy ? () => onMoveUp(idx) : () => {}}
-                        onMoveDown={!isDuplicateCopy ? () => onMoveDown(idx) : () => {}}
-                        onOpenFigureModal={!isDuplicateCopy ? () => onOpenFigureModalForBlock(block.id) : () => {}}
-                        viewMode={isDuplicateCopy ? 'preview_a4' : activeView}
-                        showBorders={exam.settings.showBorders}
-                        baseFontSize={exam.settings.baseFontSize}
-                        statementJustify={exam.settings.statementJustify}
-                        lineSpacing={exam.settings.lineSpacing}
-                        isMasonryColumn={true}
-                        isSelected={!isDuplicateCopy && selectedBlockId === block.id}
-                        onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
-                        isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
-                        showPoints={exam.settings.showPointsInPrint !== false}
-                      />
-                    );
-                  })}
+        {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
+        <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isInteractive ? 'pt-4' : ''}`}>
+          {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
+            if (segment.type === 'full' && segment.fullBlock) {
+              const { block, index: idx } = segment.fullBlock;
+              return (
+                <div key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} className="w-full exam-layout-segment">
+                  <BlockItem
+                    block={block}
+                    index={idx}
+                    totalBlocks={exam.blocks.length}
+                    rightNeighbor={undefined}
+                    onResizeWidthPair={onResizeWidthPair}
+                    onUpdateBlock={isInteractive ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
+                    onDeleteBlock={isInteractive ? () => onDeleteBlock(block.id) : () => {}}
+                    onDuplicateBlock={isInteractive ? () => onDuplicateBlock(block.id) : () => {}}
+                    onMoveUp={isInteractive ? () => onMoveUp(idx) : () => {}}
+                    onMoveDown={isInteractive ? () => onMoveDown(idx) : () => {}}
+                    onOpenFigureModal={isInteractive ? () => onOpenFigureModalForBlock(block.id) : () => {}}
+                    viewMode={effectiveViewMode}
+                    showBorders={exam.settings.showBorders}
+                    baseFontSize={exam.settings.baseFontSize}
+                    statementJustify={exam.settings.statementJustify}
+                    lineSpacing={exam.settings.lineSpacing}
+                    isMasonryColumn={true}
+                    isSelected={isInteractive && selectedBlockId === block.id}
+                    onSelect={isInteractive ? () => setSelectedBlockId(block.id) : undefined}
+                    isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
+                    showPoints={exam.settings.showPointsInPrint !== false}
+                  />
                 </div>
+              );
+            }
 
-                {/* Right Column */}
-                {segment.rightColumn && segment.rightColumn.length > 0 && (
-                  <div className={`col-span-12 ${getColSpanClassSafe(rightCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
-                    {segment.rightColumn.map(({ block, index: idx }) => {
-                      const blockSynced = { ...block, width: rightCols };
+            if (segment.type === 'split') {
+              const leftCols = segment.leftWidthCols || 6;
+              const rightCols = 12 - leftCols;
+              const firstRight = segment.rightColumn?.[0];
+
+              return (
+                <div key={`split-${segIdx}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start exam-layout-segment">
+                  {/* Left Column */}
+                  <div className={`col-span-12 ${getColSpanClassSafe(leftCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
+                    {segment.leftColumn?.map(({ block, index: idx }, leftIdx) => {
+                      const pairedRight = segment.rightColumn?.[leftIdx] || firstRight;
+                      const blockSynced = { ...block, width: leftCols };
                       return (
                         <BlockItem
-                          key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}`}
+                          key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`}
                           block={blockSynced}
                           index={idx}
                           totalBlocks={exam.blocks.length}
-                          rightNeighbor={undefined}
+                          rightNeighbor={
+                            pairedRight ? {
+                              id: pairedRight.block.id,
+                              titleNumber: pairedRight.block.titleNumber,
+                              width: rightCols
+                            } : undefined
+                          }
                           onResizeWidthPair={onResizeWidthPair}
-                          onUpdateBlock={!isDuplicateCopy ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
-                          onDeleteBlock={!isDuplicateCopy ? () => onDeleteBlock(block.id) : () => {}}
-                          onDuplicateBlock={!isDuplicateCopy ? () => onDuplicateBlock(block.id) : () => {}}
-                          onMoveUp={!isDuplicateCopy ? () => onMoveUp(idx) : () => {}}
-                          onMoveDown={!isDuplicateCopy ? () => onMoveDown(idx) : () => {}}
-                          onOpenFigureModal={!isDuplicateCopy ? () => onOpenFigureModalForBlock(block.id) : () => {}}
-                          viewMode={isDuplicateCopy ? 'preview_a4' : activeView}
+                          onUpdateBlock={isInteractive ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
+                          onDeleteBlock={isInteractive ? () => onDeleteBlock(block.id) : () => {}}
+                          onDuplicateBlock={isInteractive ? () => onDuplicateBlock(block.id) : () => {}}
+                          onMoveUp={isInteractive ? () => onMoveUp(idx) : () => {}}
+                          onMoveDown={isInteractive ? () => onMoveDown(idx) : () => {}}
+                          onOpenFigureModal={isInteractive ? () => onOpenFigureModalForBlock(block.id) : () => {}}
+                          viewMode={effectiveViewMode}
                           showBorders={exam.settings.showBorders}
                           baseFontSize={exam.settings.baseFontSize}
                           statementJustify={exam.settings.statementJustify}
                           lineSpacing={exam.settings.lineSpacing}
                           isMasonryColumn={true}
-                          isSelected={!isDuplicateCopy && selectedBlockId === block.id}
-                          onSelect={!isDuplicateCopy ? () => setSelectedBlockId(block.id) : undefined}
+                          isSelected={isInteractive && selectedBlockId === block.id}
+                          onSelect={isInteractive ? () => setSelectedBlockId(block.id) : undefined}
                           isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
                           showPoints={exam.settings.showPointsInPrint !== false}
                         />
                       );
                     })}
                   </div>
-                )}
-              </div>
-            );
-          }
 
-          return null;
-        })}
+                  {/* Right Column */}
+                  {segment.rightColumn && segment.rightColumn.length > 0 && (
+                    <div className={`col-span-12 ${getColSpanClassSafe(rightCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
+                      {segment.rightColumn.map(({ block, index: idx }) => {
+                        const blockSynced = { ...block, width: rightCols };
+                        return (
+                          <BlockItem
+                            key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`}
+                            block={blockSynced}
+                            index={idx}
+                            totalBlocks={exam.blocks.length}
+                            rightNeighbor={undefined}
+                            onResizeWidthPair={onResizeWidthPair}
+                            onUpdateBlock={isInteractive ? (updated) => onUpdateBlock(block.id, updated) : () => {}}
+                            onDeleteBlock={isInteractive ? () => onDeleteBlock(block.id) : () => {}}
+                            onDuplicateBlock={isInteractive ? () => onDuplicateBlock(block.id) : () => {}}
+                            onMoveUp={isInteractive ? () => onMoveUp(idx) : () => {}}
+                            onMoveDown={isInteractive ? () => onMoveDown(idx) : () => {}}
+                            onOpenFigureModal={isInteractive ? () => onOpenFigureModalForBlock(block.id) : () => {}}
+                            viewMode={effectiveViewMode}
+                            showBorders={exam.settings.showBorders}
+                            baseFontSize={exam.settings.baseFontSize}
+                            statementJustify={exam.settings.statementJustify}
+                            lineSpacing={exam.settings.lineSpacing}
+                            isMasonryColumn={true}
+                            isSelected={isInteractive && selectedBlockId === block.id}
+                            onSelect={isInteractive ? () => setSelectedBlockId(block.id) : undefined}
+                            isDuplicateNumber={duplicateNumbersSet.has(block.titleNumber?.trim() || '')}
+                            showPoints={exam.settings.showPointsInPrint !== false}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return null;
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div 
@@ -325,29 +343,37 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
           <>
             <div className="mb-3 px-3 py-1.5 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center justify-between shadow-2xs select-none print:hidden">
               <span className="font-semibold">
-                📄 Modo A5 (2 exámenes por hoja A4): Aquí editas tu prueba en media hoja. Al previsualizar o imprimir se duplicará lado a lado.
+                📄 Modo A5 (2 exámenes por hoja A4): Aquí editas tu prueba en media hoja. Al previsualizar o imprimir se duplicará lado a lado de forma 100% idéntica.
               </span>
               <span className="text-[10px] font-extrabold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded">
                 Ahorro 50%
               </span>
             </div>
-            <div className="print:hidden w-full">{renderExamBody(false)}</div>
-            {/* Modo Impresión directa desde editor */}
-            <div className="hidden print:grid grid-cols-2 gap-6 relative w-full bg-white">
-              <div className="pr-3 bg-white">{renderExamBody(false)}</div>
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
-              <div className="pl-3 bg-white">{renderExamBody(true)}</div>
+            {/* Vista edición en pantalla: solo una columna interactiva */}
+            <div className="print:hidden w-full">{renderExamBody({ isInteractive: true })}</div>
+            {/* Vista impresión directa desde editor: dos columnas 100% sincronizadas e idénticas */}
+            <div className="hidden print:grid grid-cols-2 gap-0 relative w-full bg-white print:divide-x print:divide-dashed print:divide-slate-400">
+              <div className="pr-3.5 print:pr-4 bg-white">
+                {renderExamBody({ isPrintOnly: true, isDuplicateCopy: false, forceCleanView: true })}
+              </div>
+              <div className="pl-3.5 print:pl-4 bg-white">
+                {renderExamBody({ isPrintOnly: true, isDuplicateCopy: true, forceCleanView: true })}
+              </div>
             </div>
           </>
         ) : (
-          <div className="grid grid-cols-2 gap-6 relative w-full bg-white">
-            <div className="pr-3 bg-white">{renderExamBody(false)}</div>
-            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300 pointer-events-none select-none" />
-            <div className="pl-3 bg-white">{renderExamBody(true)}</div>
+          /* Vista Previa o Clave Docente: dos columnas 100% sincronizadas e idénticas en pantalla y papel */
+          <div className="grid grid-cols-2 gap-0 relative w-full bg-white divide-x divide-dashed divide-slate-300 print:divide-slate-400">
+            <div className="pr-3.5 sm:pr-4 bg-white">
+              {renderExamBody({ isPrintOnly: false, isDuplicateCopy: false, forceCleanView: true })}
+            </div>
+            <div className="pl-3.5 sm:pl-4 bg-white">
+              {renderExamBody({ isPrintOnly: false, isDuplicateCopy: true, forceCleanView: true })}
+            </div>
           </div>
         )
       ) : (
-        renderExamBody(false)
+        renderExamBody({ isInteractive: activeView === 'editor' })
       )}
 
       {/* Guardrail 2: Alerta de riesgo de hoja fantasma / desborde mínimo */}
