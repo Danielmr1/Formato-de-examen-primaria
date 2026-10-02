@@ -71,7 +71,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
-  const isCompact = (block.width || 6) <= 5;
+  const isCompact = (block.width || 6) <= 7;
 
   // Añadir alternativa (Opción Múltiple: mín 2, máx 5)
   const handleAddOption = () => {
@@ -187,7 +187,11 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
           value={block.type || 'multiple_choice'}
           onChange={(e) => handleSelectType(e.target.value as QuestionType)}
           className={`bg-white border border-slate-300 rounded px-1.5 py-0.5 font-semibold text-xs text-slate-700 cursor-pointer focus:border-indigo-500 focus:outline-hidden truncate ${
-            isCompact ? 'max-w-[75px] sm:max-w-[90px]' : 'max-w-[130px] sm:max-w-none'
+            (block.width || 6) <= 5 
+              ? 'max-w-[75px] sm:max-w-[90px]' 
+              : isCompact 
+              ? 'max-w-[110px] sm:max-w-[130px]' 
+              : 'max-w-[140px] sm:max-w-none'
           }`}
           title="Tipo de pregunta"
         >
@@ -245,10 +249,10 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                 ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
                 : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
             }`}
-            title={(block.options?.length || 0) < 5 ? 'Añadir alternativa' : 'Máximo 5 alternativas permitidas'}
+            title={(block.options?.length || 0) < 5 ? 'Añadir alternativa' : 'Límite de 5 alternativas alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Alternativa {(block.options?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.options?.length || 0)}/5)`}</span>
+            <span>+ Alternativa (${block.options?.length || 0}/5)</span>
           </button>
         )}
 
@@ -263,10 +267,10 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                 ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
                 : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
             }`}
-            title={(block.trueFalseOptions?.length || 0) < 5 ? 'Añadir afirmación' : 'Máximo 5 afirmaciones permitidas'}
+            title={(block.trueFalseOptions?.length || 0) < 5 ? 'Añadir afirmación' : 'Límite de 5 afirmaciones alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Afirmación {(block.trueFalseOptions?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.trueFalseOptions?.length || 0)}/5)`}</span>
+            <span>+ Afirmación (${block.trueFalseOptions?.length || 0}/5)</span>
           </button>
         )}
 
@@ -281,10 +285,10 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                 ? 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-300 cursor-pointer'
                 : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
             }`}
-            title={(block.matchingPairs?.length || 0) < 5 ? 'Añadir par' : 'Máximo 5 parejas permitidas'}
+            title={(block.matchingPairs?.length || 0) < 5 ? 'Añadir par' : 'Límite de 5 parejas alcanzado'}
           >
             <Plus className="w-3 h-3" />
-            <span>+ Par {(block.matchingPairs?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.matchingPairs?.length || 0)}/5)`}</span>
+            <span>+ Par (${block.matchingPairs?.length || 0}/5)</span>
           </button>
         )}
 
@@ -334,7 +338,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Alternativa {(block.options?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.options?.length || 0)}/5)`}</span>
+                      <span>+ Alternativa (${block.options?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
@@ -352,7 +356,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Afirmación {(block.trueFalseOptions?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.trueFalseOptions?.length || 0)}/5)`}</span>
+                      <span>+ Afirmación (${block.trueFalseOptions?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
@@ -370,7 +374,7 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
                       className="w-full text-left px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>+ Par {(block.matchingPairs?.length || 0) >= 5 ? '(Máx. 5)' : `(${(block.matchingPairs?.length || 0)}/5)`}</span>
+                      <span>+ Par (${block.matchingPairs?.length || 0}/5)</span>
                     </button>
                     <div className="border-t border-slate-100 my-1" />
                   </>
