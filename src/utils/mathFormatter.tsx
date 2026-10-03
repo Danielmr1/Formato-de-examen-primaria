@@ -204,8 +204,16 @@ export function parseMathText(rawText: string): MathToken[] {
 export const FormattedMathText: React.FC<{
   text: string;
   className?: string;
-}> = ({ text, className = '' }) => {
-  if (!text) return null;
+  suffix?: React.ReactNode;
+}> = ({ text, className = '', suffix }) => {
+  if (!text) {
+    if (!suffix) return null;
+    return (
+      <div className={className}>
+        <p className="mb-0.5 last:mb-0 leading-relaxed">{suffix}</p>
+      </div>
+    );
+  }
 
   const lines = text.split('\n');
 
@@ -213,6 +221,7 @@ export const FormattedMathText: React.FC<{
     <div className={className}>
       {lines.map((line, lIdx) => {
         const tokens = parseMathText(line);
+        const isLastLine = lIdx === lines.length - 1;
 
         return (
           <p key={lIdx} className="mb-0.5 last:mb-0 leading-relaxed">
@@ -282,6 +291,7 @@ export const FormattedMathText: React.FC<{
 
               return <span key={tIdx}>{token.content}</span>;
             })}
+            {isLastLine && suffix}
           </p>
         );
       })}
