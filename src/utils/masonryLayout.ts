@@ -136,4 +136,58 @@ export function buildMasonrySegments(blocks: ExamBlock[]): LayoutSegment[] {
   return segments;
 }
 
+export interface PageChunk {
+  pageNumber: number;
+  segments: LayoutSegment[];
+}
+
+/**
+ * Partitions masonry segments into discrete physical pages (like Word / Google Docs)
+ * based on estimated heights and page limits.
+ */
+export function partitionSegmentsIntoPages(
+  segments: LayoutSegment[],
+  isA5: boolean,
+  headerHeight: number = isA5 ? 110 : 140
+): PageChunk[] {
+  if (segments.length === 0) {
+    return [{ pageNumber: 1, segments: [] }];
+  }
+
+  const targetHeight = isA5 ? 720 : 1050;
+  const pages: PageChunk[] = [];
+  let currentPageSegments: LayoutSegment[] = [];
+  let currentPageHeight = headerHeight;
+  let pageNum = 1;
+
+  for (const segment of segments) {
+    let segHeight = 0;
+    if (segment.type === 'full' && segment.fullBlock) {
+      segHeight = estimateBlockHeight(segment.fullBlock.block);
+    } else if (segment.type === 'split') {
+      const leftH = segment.leftColumn?.reduce((acc, b) => acc + estimateBlockHeight(b.block), 0) || 0;
+      const rightH = segment.rightColumn?.reduce((acc, b) => acc + estimateBlockHeight(b.block), 0) || 0;
+      segHeight = Math.max(leftH, rightH);
+    }
+
+    // Si ya hay al menos un segmento en la página y este segmento no cabe en el espacio restante:
+    if (currentPageSegments.length > 0 && currentPageHeight + segHeight > targetHeight) {
+      pages.push({ pageNumber: pageNum, segments: currentPageSegments });
+      pageNum++;
+      currentPageSegments = [segment];
+      currentPageHeight = segHeight + 18;
+    } else {
+      currentPageSegments.push(segment);
+      currentPageHeight += segHeight + 18;
+    }
+  }
+
+  if (currentPageSegments.length > 0 || pages.length === 0) {
+    pages.push({ pageNumber: pageNum, segments: currentPageSegments });
+  }
+
+  return pages;
+}
+
+
 

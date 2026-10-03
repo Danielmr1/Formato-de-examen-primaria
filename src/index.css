@@ -54,6 +54,13 @@
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  .page-sheet:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
   }
 
   /* Control inteligente de saltos de página */

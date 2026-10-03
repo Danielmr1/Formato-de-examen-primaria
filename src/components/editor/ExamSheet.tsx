@@ -1,21 +1,13 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   CheckCircle2, 
   BookOpen, 
-  Columns2, 
-  RectangleHorizontal, 
-  RectangleVertical, 
-  Image as ImageIcon,
-  Plus,
-  FileText,
-  Grid,
-  CheckSquare,
   AlertTriangle
 } from 'lucide-react';
 import { BlockWidth, ExamBlock, ExamDocument, QuestionType } from '../../types';
 import { HeaderEditor } from '../HeaderEditor';
 import { BlockItem } from '../BlockItem';
-import { buildMasonrySegments } from '../../utils/masonryLayout';
+import { buildMasonrySegments, partitionSegmentsIntoPages, PageChunk } from '../../utils/masonryLayout';
 
 interface ExamSheetProps {
   exam: ExamDocument;
@@ -46,13 +38,9 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   onMoveDown,
   onResizeWidthPair,
   onOpenFigureModalForBlock,
-  onAddBlock,
   onUpdateSettings,
   onPagesCalculated
 }) => {
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number>(0);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
   // Detección de números de pregunta duplicados
@@ -90,140 +78,61 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
     }
   };
 
-  // Medir la altura física real de las preguntas y encabezado (sin la altura forzada de la hoja)
-  useEffect(() => {
-    if (!contentRef.current) return;
-    
-    const updateHeight = () => {
-      if (contentRef.current) {
-        const h = contentRef.current.getBoundingClientRect().height;
-        if (h > 0) setContentHeight(h);
-      }
-    };
-
-    updateHeight();
-    const rafId = requestAnimationFrame(updateHeight);
-    const timeoutId = setTimeout(updateHeight, 150);
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.height > 0) {
-          setContentHeight(entry.contentRect.height);
-        }
-      }
-    });
-
-    observer.observe(contentRef.current);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, [exam.blocks, exam.header, exam.settings, activeView]);
-
   const isA5 = exam.settings.paperSize === 'a5_2in1' || exam.settings.paperSize === 'a5_single';
   const is2in1 = exam.settings.paperSize === 'a5_2in1';
 
-  // Guardrail 2: Detección inteligente de páginas y prevención de hojas fantasma
-  const targetPageHeightPx = isA5 ? 720 : 1050;
-  const estimatedPages = Math.max(1, Math.ceil(contentHeight / targetPageHeightPx));
-  const remainderPx = contentHeight % targetPageHeightPx;
-  // Solo hay riesgo de desborde si el contenido supera 1 página completa Y el sobrante es pequeño (< 140px)
-  const isGhostPageRisk = contentHeight > targetPageHeightPx && remainderPx > 0 && remainderPx < 140;
+  // Partición exacta en hojas físicas independientes estilo Microsoft Word
+  const segments = useMemo(() => buildMasonrySegments(exam.blocks), [exam.blocks]);
+  const pages = useMemo(() => partitionSegmentsIntoPages(segments, isA5), [segments, isA5]);
 
   useEffect(() => {
     if (onPagesCalculated) {
-      onPagesCalculated(estimatedPages);
+      onPagesCalculated(pages.length);
     }
-  }, [estimatedPages, onPagesCalculated]);
-
-  const [segmentMargins, setSegmentMargins] = useState<number[]>([]);
-
-  // Evitar que las preguntas se corten entre páginas en pantalla: salto inteligente de bloque
-  useEffect(() => {
-    if (!contentRef.current) return;
-
-    const calculateMargins = () => {
-      if (!contentRef.current) return;
-      const headerEl = contentRef.current.querySelector('.exam-header-block') as HTMLElement | null;
-      const segmentEls = contentRef.current.querySelectorAll('.exam-layout-segment');
-      if (!segmentEls || segmentEls.length === 0) return;
-
-      const headerHeight = headerEl ? headerEl.offsetHeight + 14 : 110;
-      const gap = 16;
-      let currentPageY = headerHeight;
-      const newMargins: number[] = [];
-
-      segmentEls.forEach((el) => {
-        const segEl = el as HTMLElement;
-        const segHeight = segEl.offsetHeight;
-
-        // Si la pregunta cabe en una página estándar y supera el espacio restante de la página actual
-        if (segHeight <= targetPageHeightPx && currentPageY + segHeight > targetPageHeightPx) {
-          const jumpMargin = targetPageHeightPx - currentPageY;
-          newMargins.push(Math.max(0, jumpMargin));
-          currentPageY = segHeight + gap;
-        } else {
-          newMargins.push(0);
-          currentPageY += segHeight + gap;
-          while (currentPageY >= targetPageHeightPx) {
-            currentPageY -= targetPageHeightPx;
-          }
-        }
-      });
-
-      setSegmentMargins(prev => {
-        if (prev.length === newMargins.length && prev.every((val, idx) => Math.abs(val - newMargins[idx]) < 2)) {
-          return prev;
-        }
-        return newMargins;
-      });
-    };
-
-    const timer = setTimeout(calculateMargins, 50);
-    return () => clearTimeout(timer);
-  }, [exam.blocks, exam.header, exam.settings, activeView, contentHeight, targetPageHeightPx]);
+  }, [pages.length, onPagesCalculated]);
 
   const isPreviewMode = activeView === 'preview_a4' || activeView === 'solution_key';
 
   const getSheetClasses = () => {
     if (activeView === 'editor') {
       if (isA5) {
-        return 'w-full max-w-[620px] shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5';
+        return 'w-full max-w-[620px] min-h-[720px] shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5';
       }
-      return 'w-full max-w-4xl shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5 md:p-6';
+      return 'w-full max-w-4xl min-h-[1050px] shadow-xl rounded-xl border border-slate-300/80 p-3.5 sm:p-5 md:p-6';
     }
     // isPreviewMode
     if (is2in1) {
-      return 'w-full max-w-[1120px] min-h-[760px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-4 sm:p-6 my-3';
+      return 'w-full max-w-[1120px] min-h-[760px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-4 sm:p-6';
     }
     if (exam.settings.paperSize === 'a5_single') {
-      return 'w-full max-w-[560px] min-h-[780px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-4 sm:p-6 my-3';
+      return 'w-full max-w-[560px] min-h-[780px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-4 sm:p-6';
     }
-    return 'w-full max-w-[794px] min-h-[1123px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-5 sm:p-7 md:p-8 my-3';
+    return 'w-full max-w-[794px] min-h-[1123px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-slate-300/90 rounded-none sm:rounded-xs p-5 sm:p-7 md:p-8';
   };
 
-  interface RenderBodyProps {
+  interface RenderPageProps {
     isPrintOnly?: boolean;
     isDuplicateCopy?: boolean;
     forceCleanView?: boolean;
   }
 
-  const renderExamBody = ({
-    isPrintOnly = false,
-    isDuplicateCopy = false,
-    forceCleanView = false,
-  }: RenderBodyProps = {}) => {
+  const renderPageContent = (
+    pageChunk: PageChunk,
+    {
+      isPrintOnly = false,
+      isDuplicateCopy = false,
+      forceCleanView = false,
+    }: RenderPageProps = {}
+  ) => {
     const isCleanMode = forceCleanView || isPrintOnly || isPreviewMode || isDuplicateCopy;
     const isInteractive = !isCleanMode && activeView === 'editor';
     const effectiveViewMode = activeView === 'solution_key' 
       ? 'solution_key' 
       : (isInteractive ? 'editor' : 'preview_a4');
+    const isFirstPage = pageChunk.pageNumber === 1;
 
     return (
       <div 
-        ref={!isDuplicateCopy && !isPrintOnly ? contentRef : undefined} 
         className="w-full flex flex-col bg-white"
         onClick={(e) => {
           if (isInteractive && e.target === e.currentTarget) {
@@ -231,28 +140,26 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
           }
         }}
       >
-        {/* Institutional Header */}
-        <HeaderEditor
-          header={exam.header}
-          onUpdateHeader={isInteractive ? onUpdateHeader : () => {}}
-          isPrintMode={isCleanMode}
-          totalScore={totalPoints}
-          isA5={isA5}
-        />
+        {/* Institutional Header (Solo en la primera hoja) */}
+        {isFirstPage && (
+          <HeaderEditor
+            header={exam.header}
+            onUpdateHeader={isInteractive ? onUpdateHeader : () => {}}
+            isPrintMode={isCleanMode}
+            totalScore={totalPoints}
+            isA5={isA5}
+          />
+        )}
 
-        {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
-        <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isInteractive ? 'pt-4' : ''}`}>
-          {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
-            const jumpMargin = segmentMargins[segIdx] || 0;
-            const jumpStyle = jumpMargin > 0 ? { marginTop: `${jumpMargin}px` } : undefined;
-
+        {/* Dynamic Tetris / Masonry Bento Grid de las preguntas de esta hoja */}
+        <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isInteractive && isFirstPage ? 'pt-4' : ''}`}>
+          {pageChunk.segments.map((segment, segIdx) => {
             if (segment.type === 'full' && segment.fullBlock) {
               const { block, index: idx } = segment.fullBlock;
               return (
                 <div 
                   key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} 
-                  className="w-full exam-layout-segment print:!mt-0"
-                  style={jumpStyle}
+                  className="w-full exam-layout-segment"
                 >
                   <BlockItem
                     block={block}
@@ -289,8 +196,7 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
               return (
                 <div 
                   key={`split-${segIdx}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} 
-                  className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start exam-layout-segment print:!mt-0"
-                  style={jumpStyle}
+                  className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start exam-layout-segment"
                 >
                   {/* Left Column */}
                   <div className={`col-span-12 ${getColSpanClassSafe(leftCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
@@ -378,53 +284,10 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
   };
 
   return (
-    <div 
-      ref={sheetRef}
-      className={`page-sheet relative bg-white transition-all ${getSheetClasses()} ${exam.settings.colorMode === 'grayscale' ? 'exam-grayscale-mode' : ''}`}
-    >
-      {/* Indicadores visuales de corte de página A4/A5 (Solo en pantalla en modo Vista Previa) */}
-      {isPreviewMode && estimatedPages > 1 && (
-        <div className="pointer-events-none select-none print:hidden">
-          {Array.from({ length: estimatedPages - 1 }).map((_, i) => {
-            const pageNum = i + 1;
-            return (
-              <div 
-                key={`page-break-${pageNum}`}
-                className="absolute inset-x-0 z-20 flex items-center justify-center pointer-events-none"
-                style={{ top: `${pageNum * targetPageHeightPx}px` }}
-              >
-                <div className="w-full border-b-2 border-dashed border-indigo-400/80 relative flex items-center justify-center">
-                  <span className="bg-indigo-50 text-indigo-800 font-black text-[10px] px-3 py-0.5 rounded-full border border-indigo-300 shadow-xs tracking-wide">
-                    📄 Fin de Página {pageNum} — Inicio de Página {pageNum + 1}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Línea guía tenue de fin de página en Modo Edición (sutil, sin textos ni insignias) */}
-      {activeView === 'editor' && estimatedPages > 1 && (
-        <div className="pointer-events-none select-none print:hidden">
-          {Array.from({ length: estimatedPages - 1 }).map((_, i) => {
-            const pageNum = i + 1;
-            return (
-              <div 
-                key={`editor-page-break-${pageNum}`}
-                className="absolute inset-x-0 z-10 pointer-events-none"
-                style={{ top: `${pageNum * targetPageHeightPx}px` }}
-              >
-                <div className="w-full border-b border-dashed border-slate-300/80" />
-              </div>
-            );
-          })}
-        </div>
-      )}
-
+    <div className="w-full flex flex-col items-center">
       {/* Header Banner Mode Indicator in Solution Mode */}
       {activeView === 'solution_key' && (
-        <div className="mb-4 p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-emerald-900 flex items-center justify-between text-xs print:hidden">
+        <div className="mb-4 max-w-4xl w-full p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-emerald-900 flex items-center justify-between text-xs print:hidden">
           <div className="flex items-center gap-2 font-extrabold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>MODO CLAVE DE RESPUESTAS PARA EL DOCENTE ACTIVO</span>
@@ -433,84 +296,109 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         </div>
       )}
 
-      {/* Contenido del Examen */}
-      {is2in1 ? (
-        activeView === 'editor' ? (
-          <>
-            {/* Vista edición en pantalla: solo una columna interactiva */}
-            <div className="print:hidden w-full">{renderExamBody({ isInteractive: true })}</div>
-            {/* Vista impresión directa desde editor: dos columnas 100% sincronizadas e idénticas */}
-            <div className="hidden print:grid grid-cols-2 gap-0 relative w-full bg-white print:divide-x print:divide-dashed print:divide-slate-400">
-              <div className="pr-3.5 print:pr-4 bg-white">
-                {renderExamBody({ isPrintOnly: true, isDuplicateCopy: false, forceCleanView: true })}
-              </div>
-              <div className="pl-3.5 print:pl-4 bg-white">
-                {renderExamBody({ isPrintOnly: true, isDuplicateCopy: true, forceCleanView: true })}
-              </div>
-            </div>
-          </>
-        ) : (
-          /* Vista Previa o Clave Docente: dos columnas 100% sincronizadas e idénticas en pantalla y papel */
-          <div className="grid grid-cols-2 gap-0 relative w-full bg-white divide-x divide-dashed divide-slate-300 print:divide-slate-400">
-            <div className="pr-3.5 sm:pr-4 bg-white">
-              {renderExamBody({ isPrintOnly: false, isDuplicateCopy: false, forceCleanView: true })}
-            </div>
-            <div className="pl-3.5 sm:pl-4 bg-white">
-              {renderExamBody({ isPrintOnly: false, isDuplicateCopy: true, forceCleanView: true })}
-            </div>
-          </div>
-        )
-      ) : (
-        renderExamBody({ isInteractive: activeView === 'editor' })
-      )}
+      {/* Renderizado de cada Hoja Física Independiente (estilo Microsoft Word / Google Docs) */}
+      {pages.map((pageChunk, pageIdx) => {
+        const isFirstPage = pageIdx === 0;
 
-      {/* Guardrail 2: Alerta de riesgo de hoja fantasma / desborde mínimo */}
-      {isGhostPageRisk && activeView !== 'student' && (
-        <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-900 print:hidden shadow-xs animate-in fade-in">
+        return (
+          <React.Fragment key={`sheet-${pageChunk.pageNumber}`}>
+            <div 
+              className={`page-sheet relative bg-white transition-all ${getSheetClasses()} ${exam.settings.colorMode === 'grayscale' ? 'exam-grayscale-mode' : ''}`}
+            >
+              {is2in1 ? (
+                activeView === 'editor' ? (
+                  <>
+                    {/* Vista edición en pantalla: una columna interactiva por hoja */}
+                    <div className="print:hidden w-full">
+                      {renderPageContent(pageChunk, { isInteractive: true })}
+                    </div>
+                    {/* Vista impresión directa desde editor: dos columnas 100% sincronizadas por hoja */}
+                    <div className="hidden print:grid grid-cols-2 gap-0 relative w-full bg-white print:divide-x print:divide-dashed print:divide-slate-400">
+                      <div className="pr-3.5 print:pr-4 bg-white">
+                        {renderPageContent(pageChunk, { isPrintOnly: true, isDuplicateCopy: false, forceCleanView: true })}
+                      </div>
+                      <div className="pl-3.5 print:pl-4 bg-white">
+                        {renderPageContent(pageChunk, { isPrintOnly: true, isDuplicateCopy: true, forceCleanView: true })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Vista Previa o Clave Docente: dos columnas idénticas por hoja en pantalla y papel */
+                  <div className="grid grid-cols-2 gap-0 relative w-full bg-white divide-x divide-dashed divide-slate-300 print:divide-slate-400">
+                    <div className="pr-3.5 sm:pr-4 bg-white">
+                      {renderPageContent(pageChunk, { isPrintOnly: false, isDuplicateCopy: false, forceCleanView: true })}
+                    </div>
+                    <div className="pl-3.5 sm:pl-4 bg-white">
+                      {renderPageContent(pageChunk, { isPrintOnly: false, isDuplicateCopy: true, forceCleanView: true })}
+                    </div>
+                  </div>
+                )
+              ) : (
+                renderPageContent(pageChunk, { isInteractive: activeView === 'editor' })
+              )}
+
+              {/* Empty state si la evaluación aún no tiene preguntas */}
+              {isFirstPage && exam.blocks.length === 0 && (
+                <div className="text-center py-10 border border-dashed border-slate-300 rounded-xl p-6 my-4 select-none">
+                  <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-500">
+                    Este examen aún no tiene preguntas.
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Haz clic en los botones de la barra superior (+ Opción Múltiple, Verdadero/Falso, etc.) para comenzar a agregar ejercicios.
+                  </p>
+                </div>
+              )}
+
+              {/* Pie de página informativo en modo Vista Previa */}
+              {isPreviewMode && (
+                <div className="mt-8 pt-3 border-t border-slate-200/90 flex items-center justify-between text-[11px] text-slate-400 select-none print:hidden">
+                  <span>{exam.header.institutionName || 'Evaluación Escolar'}</span>
+                  <span className="font-semibold text-slate-500">
+                    {is2in1 
+                      ? 'Formato A5 (2 en 1)' 
+                      : exam.settings.paperSize === 'a5_single' 
+                      ? 'Formato A5 Individual' 
+                      : 'Formato A4'} • Página {pageChunk.pageNumber} de {pages.length}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Espacio entre hojas estilo Word (visible en pantalla tanto en edición como en vista previa) */}
+            {pageIdx < pages.length - 1 && (
+              <div className="w-full flex items-center justify-center my-5 sm:my-8 select-none print:hidden">
+                <div className="flex items-center gap-3 text-slate-400 text-xs font-semibold">
+                  <div className="w-16 sm:w-28 h-px bg-slate-300/80" />
+                  <span className="bg-slate-200/90 text-slate-600 px-3.5 py-1 rounded-full text-[11px] shadow-2xs font-bold border border-slate-300/70">
+                    Hoja {pageChunk.pageNumber + 1}
+                  </span>
+                  <div className="w-16 sm:w-28 h-px bg-slate-300/80" />
+                </div>
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
+
+      {/* Guardrail: Alerta cuando la última página tiene solo 1 pregunta y riesgo de hoja extra */}
+      {pages.length > 1 && pages[pages.length - 1].segments.length === 1 && activeView !== 'student' && onUpdateSettings && exam.settings.lineSpacing !== 'compact' && (
+        <div className="mt-4 max-w-4xl w-full p-3 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-900 print:hidden shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
             <div>
               <span className="font-bold">Aviso de impresión (Hoja extra detectada): </span>
-              <span>El examen se pasa a la página {estimatedPages} por muy poco contenido ({Math.round(remainderPx)}px).</span>
+              <span>El examen se pasa a la página {pages.length} por solo una pregunta.</span>
             </div>
           </div>
-          {onUpdateSettings && exam.settings.lineSpacing !== 'compact' && (
-            <button
-              type="button"
-              onClick={() => onUpdateSettings({ lineSpacing: 'compact' })}
-              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition-colors shrink-0 shadow-2xs cursor-pointer"
-              title="Ajustar interlineado a compacto para que quepa en menos páginas"
-            >
-              Ajustar a {estimatedPages - 1} página{estimatedPages - 1 > 1 ? 's' : ''}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Empty State / Limpio sin botones duplicados */}
-      {exam.blocks.length === 0 && (
-        <div className="text-center py-10 border border-dashed border-slate-300 rounded-xl p-6 my-4 select-none">
-          <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <p className="text-xs font-semibold text-slate-500">
-            Este examen aún no tiene preguntas.
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            Haz clic en los botones de la barra superior (+ Opción Múltiple, Verdadero/Falso, etc.) para comenzar a agregar ejercicios.
-          </p>
-        </div>
-      )}
-
-      {/* Pie de página A4 informativo en modo Vista Previa */}
-      {isPreviewMode && (
-        <div className="mt-8 pt-3 border-t border-slate-200/90 flex items-center justify-between text-[11px] text-slate-400 select-none print:hidden">
-          <span>{exam.header.institutionName || 'Evaluación Escolar'}</span>
-          <span className="font-semibold text-slate-500">
-            {is2in1 
-              ? 'Formato A5 (2 en 1)' 
-              : exam.settings.paperSize === 'a5_single' 
-              ? 'Formato A5 Individual' 
-              : 'Formato A4'} • {estimatedPages} {estimatedPages === 1 ? 'página' : 'páginas'}
-          </span>
+          <button
+            type="button"
+            onClick={() => onUpdateSettings({ lineSpacing: 'compact' })}
+            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition-colors shrink-0 shadow-2xs cursor-pointer"
+            title="Ajustar interlineado a compacto para que quepa en menos páginas"
+          >
+            Ajustar a {pages.length - 1} página{pages.length - 1 > 1 ? 's' : ''}
+          </button>
         </div>
       )}
     </div>
