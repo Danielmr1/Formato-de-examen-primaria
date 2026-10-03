@@ -254,12 +254,18 @@
 }
 
 /* Forzar blanco absoluto en cualquier fondo de tarjeta, bloque o contenedor */
-.exam-grayscale-mode [class*="bg-indigo-"],
-.exam-grayscale-mode [class*="bg-sky-"],
-.exam-grayscale-mode [class*="bg-blue-"],
-.exam-grayscale-mode [class*="bg-amber-"],
-.exam-grayscale-mode [class*="bg-purple-"],
-.exam-grayscale-mode [class*="bg-emerald-"],
+.exam-grayscale-mode [class*="bg-indigo-50"],
+.exam-grayscale-mode [class*="bg-indigo-100"],
+.exam-grayscale-mode [class*="bg-sky-50"],
+.exam-grayscale-mode [class*="bg-sky-100"],
+.exam-grayscale-mode [class*="bg-blue-50"],
+.exam-grayscale-mode [class*="bg-blue-100"],
+.exam-grayscale-mode [class*="bg-amber-50"],
+.exam-grayscale-mode [class*="bg-amber-100"],
+.exam-grayscale-mode [class*="bg-purple-50"],
+.exam-grayscale-mode [class*="bg-purple-100"],
+.exam-grayscale-mode [class*="bg-emerald-50"],
+.exam-grayscale-mode [class*="bg-emerald-100"],
 .exam-grayscale-mode [class*="bg-slate-50"],
 .exam-grayscale-mode [class*="bg-slate-100"],
 .exam-grayscale-mode [class*="bg-slate-200"],
@@ -272,9 +278,16 @@
   background: #ffffff !important;
 }
 
-.exam-grayscale-mode .bg-indigo-600 {
+/* Badges seleccionados y botones activos en modo B&N (Fotocopia): fondo oscuro nítido y texto blanco */
+.exam-grayscale-mode .bg-indigo-600,
+.exam-grayscale-mode .bg-emerald-600,
+.exam-grayscale-mode .bg-rose-600,
+.exam-grayscale-mode .option-badge-print.bg-emerald-600,
+.exam-grayscale-mode .tf-badge-print.bg-emerald-600,
+.exam-grayscale-mode .tf-badge-print.bg-rose-600 {
   background-color: #0f172a !important;
   color: #ffffff !important;
+  border-color: #0f172a !important;
 }
 
 .exam-grayscale-mode .bg-indigo-100 {

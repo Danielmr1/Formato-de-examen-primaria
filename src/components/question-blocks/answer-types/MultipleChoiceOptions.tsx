@@ -101,7 +101,7 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
                   isSolutionKey && opt.isCorrect ? 'solution-correct ' : ''
                 }${
                   opt.isCorrect && (isSolutionKey || isEditor)
-                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    ? 'bg-emerald-600 text-white border border-emerald-600 shadow-2xs'
                     : isEmpty
                     ? 'border border-amber-400 bg-amber-100 text-amber-800 hover:border-amber-600'
                     : 'border border-slate-300 bg-white text-slate-700 hover:border-indigo-500'
