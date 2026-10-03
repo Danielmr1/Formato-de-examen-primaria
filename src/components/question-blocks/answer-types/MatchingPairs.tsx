@@ -137,19 +137,23 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                   </button>
                 )}
 
-                {/* Modo Impresión (para alumnos sale vacío; para clave docente sale con el número en verde) */}
+                {/* Modo Impresión (para alumnos sale vacío con paréntesis; para clave docente sale sólo el número en verde) */}
                 <span className="matching-paren-box hidden print:inline-flex items-center justify-center font-bold text-xs shrink-0 select-none mt-0.5">
-                  ( {isSolutionKey && hasMatch ? <strong className="font-extrabold text-emerald-800">{matchIndex}</strong> : <>&nbsp;&nbsp;&nbsp;</>} )
+                  {isSolutionKey ? (
+                    hasMatch ? <strong className="font-extrabold text-emerald-800 min-w-[14px] text-center">{matchIndex}</strong> : <>&nbsp;&nbsp;&nbsp;</>
+                  ) : (
+                    <>( &nbsp;&nbsp;&nbsp; )</>
+                  )}
                 </span>
 
-                {/* Modo Pantalla: Clave Docente */}
+                {/* Modo Pantalla: Clave Docente (solo el número en verde, sin paréntesis, para no restar ancho al texto) */}
                 {isSolutionKey ? (
-                  <div 
-                    className="print:hidden flex items-center justify-center font-black text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-400 shrink-0 shadow-2xs select-none mt-0.5"
+                  <span 
+                    className="print:hidden font-black text-xs text-emerald-600 shrink-0 select-none mt-0.5 min-w-[14px] text-center"
                     title={`Respuesta correcta: Elemento ${matchIndex || 'sin asignar'}`}
                   >
-                    ( {hasMatch ? matchIndex : '?'} )
-                  </div>
+                    {hasMatch ? matchIndex : '?'}
+                  </span>
                 ) : isEditor ? (
                   /* Modo Pantalla: Editor Interactivo con selector en el paréntesis */
                   <div 
