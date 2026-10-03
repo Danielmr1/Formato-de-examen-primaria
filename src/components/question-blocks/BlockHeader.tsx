@@ -26,6 +26,7 @@ interface BlockHeaderProps {
   onMoveDown: (index: number) => void;
   onOpenDiagramModal?: (blockId: string) => void;
   isDuplicateNumber?: boolean;
+  showPoints?: boolean;
 }
 
 const QUESTION_FORMATS: { id: QuestionType; label: string }[] = [
@@ -55,7 +56,8 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
   onMoveUp,
   onMoveDown,
   onOpenDiagramModal,
-  isDuplicateNumber = false
+  isDuplicateNumber = false,
+  showPoints = true
 }) => {
   if (!isEditor) return null;
 
@@ -309,19 +311,21 @@ export const BlockHeader: React.FC<BlockHeaderProps> = ({
         )}
 
         {/* Puntos */}
-        <div className="flex items-center gap-0.5 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded font-semibold text-[11px]">
-          <span>Pts:</span>
-          <input
-            type="number"
-            min={0}
-            max={20}
-            step={0.5}
-            value={block.points ?? 2}
-            onChange={(e) => onUpdateBlock({ points: parseFloat(e.target.value) || 0 })}
-            className="w-7 text-center font-bold text-indigo-700 bg-transparent focus:outline-hidden"
-            title="Puntos de esta pregunta"
-          />
-        </div>
+        {showPoints && block.type !== 'reading_passage' && (
+          <div className="flex items-center gap-0.5 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded font-semibold text-[11px]">
+            <span>Pts:</span>
+            <input
+              type="number"
+              min={0}
+              max={20}
+              step={0.5}
+              value={block.points ?? 2}
+              onChange={(e) => onUpdateBlock({ points: parseFloat(e.target.value) || 0 })}
+              className="w-7 text-center font-bold text-indigo-700 bg-transparent focus:outline-hidden"
+              title="Puntos de esta pregunta"
+            />
+          </div>
+        )}
 
         {isCompact ? (
           /* Modo Compacto (<= 5 columnas): Menú desplegable de 3 puntos */

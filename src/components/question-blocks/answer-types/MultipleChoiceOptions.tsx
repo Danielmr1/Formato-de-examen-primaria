@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Trash2, AlertTriangle, X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { ChoiceOption, ExamBlock } from '../../../types';
 import { FormattedMathText, hasMathContent } from '../../../utils/mathFormatter';
 import { sanitizeTextLength } from '../../../utils/securitySanitizer';
+import { AutoResizingTextarea } from './AutoResizingTextarea';
 
 // Límites según columnas de ancho para evitar desborde
 const getMaxCharsForOption = (cols: number = 12) => {
@@ -29,7 +30,6 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
   const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
   const maxChars = getMaxCharsForOption(block.width || 12);
   const currentOptions = block.options || [];
-  const canAdd = currentOptions.length < 5;
   const canDelete = currentOptions.length > 2;
 
   const handleUpdateOption = (optId: string, updated: Partial<ChoiceOption>) => {
@@ -63,8 +63,6 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
     });
   };
 
-  const hasCorrectChoice = block.options?.some(o => o.isCorrect);
-
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 sm:gap-y-3">
@@ -75,7 +73,7 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
           return (
             <div 
               key={opt.id}
-              className={`flex items-center gap-2 p-1.5 rounded-lg border choice-option-card ${getOptionSizeClass()} transition-colors ${
+              className={`choice-option-card group relative flex items-start gap-2 p-1.5 rounded-lg border ${getOptionSizeClass()} overflow-visible transition-colors ${
                 isSolutionKey && opt.isCorrect
                   ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-bold'
                   : isEmpty
@@ -83,11 +81,23 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
                   : 'bg-slate-50/50 border-slate-200 text-slate-800'
               }`}
             >
+              {/* Botón flotante para eliminar (Opción A: sólo aparece al pasar el cursor) */}
+              {isEditor && canDelete && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteOption(opt.id)}
+                  className="absolute -top-2 -right-2 z-20 p-1 rounded-full bg-white border border-slate-300 shadow-xs print:hidden transition-all opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 cursor-pointer"
+                  title="Eliminar alternativa"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+
               {/* Option Label / Radio Button */}
               <button
                 type="button"
                 onClick={() => isEditor && handleSetCorrectOption(opt.id)}
-                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all option-badge-print ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 transition-all option-badge-print ${
                   isSolutionKey && opt.isCorrect ? 'solution-correct ' : ''
                 }${
                   opt.isCorrect && (isSolutionKey || isEditor)
@@ -110,28 +120,28 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
                         onClick={() => {
                           setFocusedOptionId(opt.id);
                           setTimeout(() => {
-                            const input = document.querySelector(`input[data-block-id="${block.id}"][data-opt-id="${opt.id}"]`) as HTMLInputElement | null;
-                            if (input) input.focus();
+                            const textarea = document.querySelector(`textarea[data-block-id="${block.id}"][data-opt-id="${opt.id}"]`) as HTMLTextAreaElement | null;
+                            if (textarea) textarea.focus();
                           }, 25);
                         }}
-                        className="flex-1 cursor-text hover:bg-slate-50 rounded px-1 py-0.5 border-b border-transparent hover:border-slate-300 text-xs text-slate-900"
+                        className="flex-1 cursor-text hover:bg-slate-50 rounded px-1 py-0.5 border-b border-transparent hover:border-slate-300 text-xs text-slate-900 break-words [overflow-wrap:anywhere] [word-break:break-word]"
+                        style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                         title="Haz clic para editar la alternativa"
                       >
                         <FormattedMathText text={opt.text} />
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <input
-                          type="text"
-                          data-block-id={block.id}
-                          data-opt-id={opt.id}
-                          value={opt.text}
+                      <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                        <AutoResizingTextarea
+                          dataBlockId={block.id}
+                          dataOptId={opt.id}
+                          value={opt.text || ''}
                           maxLength={maxChars}
-                          onChange={(e) => handleUpdateOption(opt.id, { text: e.target.value })}
+                          onChange={(val) => handleUpdateOption(opt.id, { text: val })}
                           onFocus={() => setFocusedOptionId(opt.id)}
                           onBlur={() => setTimeout(() => setFocusedOptionId(null), 150)}
-                          placeholder={`Alternativa ${letter}`}
-                          className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden text-xs py-0.5 truncate focus:overflow-visible ${
+                          placeholder={`Alternativa ${letter}...`}
+                          className={`flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden text-xs py-0.5 ${
                             isEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
                           }`}
                           title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 25 letras)`}
@@ -140,35 +150,18 @@ export const MultipleChoiceOptions: React.FC<MultipleChoiceOptionsProps> = ({
                     )}
                   </div>
 
-                  <div className="flex-1 hidden print:block text-xs break-words overflow-hidden">
+                  <div className="flex-1 min-w-0 hidden print:block text-xs break-words [overflow-wrap:anywhere] [word-break:break-word] overflow-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                     <FormattedMathText text={opt.text} />
                   </div>
                 </>
               ) : (
-                <span className="flex-1 text-xs break-words overflow-hidden">
+                <span className="flex-1 min-w-0 text-xs break-words [overflow-wrap:anywhere] [word-break:break-word] overflow-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                   <FormattedMathText text={opt.text} />
                 </span>
               )}
-
-            {/* Delete option */}
-            {isEditor && (
-              <button
-                type="button"
-                onClick={() => handleDeleteOption(opt.id)}
-                disabled={!canDelete}
-                className={`p-0.5 rounded print:hidden transition-colors ${
-                  canDelete
-                    ? 'text-slate-400 hover:text-rose-600 cursor-pointer'
-                    : 'text-slate-200 cursor-not-allowed opacity-30'
-                }`}
-                title={canDelete ? 'Eliminar alternativa' : 'Mínimo 2 alternativas requeridas'}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

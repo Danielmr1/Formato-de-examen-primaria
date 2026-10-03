@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { ExamBlock } from '../../../types';
 import { FormattedMathText } from '../../../utils/mathFormatter';
 import { sanitizeTextLength } from '../../../utils/securitySanitizer';
+import { AutoResizingTextarea } from './AutoResizingTextarea';
 
 // Límites según columnas de ancho para evitar desborde
 const getMaxCharsForMatching = (cols: number = 12) => {
@@ -16,67 +17,6 @@ interface MatchingPairsProps {
   isEditor: boolean;
   onUpdateBlock: (updated: Partial<ExamBlock>) => void;
 }
-
-interface AutoResizingTextareaProps {
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-  className?: string;
-  maxLength?: number;
-  title?: string;
-}
-
-const AutoResizingTextarea: React.FC<AutoResizingTextareaProps> = ({
-  value,
-  onChange,
-  placeholder,
-  className,
-  maxLength,
-  title
-}) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  React.useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-
-    const adjustHeight = () => {
-      el.style.height = 'auto';
-      el.style.height = `${Math.max(20, el.scrollHeight)}px`;
-    };
-
-    adjustHeight();
-
-    const ro = new ResizeObserver(() => {
-      adjustHeight();
-    });
-    ro.observe(el);
-
-    return () => ro.disconnect();
-  }, [value]);
-
-  return (
-    <textarea
-      ref={textareaRef}
-      rows={1}
-      cols={1}
-      value={value}
-      maxLength={maxLength}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-        }
-      }}
-      onChange={(e) => {
-        onChange(e.target.value.replace(/\n/g, ' '));
-      }}
-      placeholder={placeholder}
-      className={`resize-none overflow-hidden leading-tight min-w-0 w-full whitespace-pre-wrap ${className || ''}`}
-      style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
-      title={title}
-    />
-  );
-};
 
 export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   block,

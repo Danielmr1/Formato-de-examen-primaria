@@ -43,11 +43,33 @@ export function estimateBlockHeight(block: ExamBlock): number {
   }
   if (block.type === 'multiple_choice') {
     const optCount = block.options?.length || 4;
-    return baseHeight + optCount * 36;
+    let extraHeight = 0;
+    if (block.options) {
+      const isNarrow = (block.width || 12) <= 6;
+      const threshold = isNarrow ? 22 : 45;
+      block.options.forEach(opt => {
+        const textLen = opt.text?.length || 0;
+        if (textLen > threshold) {
+          extraHeight += 18;
+        }
+      });
+    }
+    return baseHeight + optCount * 36 + extraHeight;
   }
   if (block.type === 'true_false') {
     const stCount = block.trueFalseOptions?.length || 3;
-    return baseHeight + stCount * 36;
+    let extraHeight = 0;
+    if (block.trueFalseOptions) {
+      const isNarrow = (block.width || 12) <= 6;
+      const threshold = isNarrow ? 30 : 60;
+      block.trueFalseOptions.forEach(tf => {
+        const textLen = tf.statement?.length || 0;
+        if (textLen > threshold) {
+          extraHeight += 18;
+        }
+      });
+    }
+    return baseHeight + stCount * 36 + extraHeight;
   }
   if (block.heightMode === 'tall') return Math.max(baseHeight, 280);
   if (block.heightMode === 'compact') return Math.max(baseHeight, 110);

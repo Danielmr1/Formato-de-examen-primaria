@@ -190,6 +190,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
             onMoveDown={onMoveDown}
             onOpenDiagramModal={onOpenFigureModal}
             isDuplicateNumber={isDuplicateNumber}
+            showPoints={showPoints}
           />
         </div>
       )}
