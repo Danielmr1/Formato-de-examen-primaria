@@ -28,7 +28,18 @@ export function estimateBlockHeight(block: ExamBlock): number {
   }
   if (block.type === 'matching') {
     const pairCount = block.matchingPairs?.length || 3;
-    return baseHeight + pairCount * 44;
+    let extraHeight = 0;
+    if (block.matchingPairs) {
+      const isNarrow = (block.width || 12) <= 6;
+      block.matchingPairs.forEach(p => {
+        const textLen = Math.max(p.leftText?.length || 0, p.rightText?.length || 0);
+        const threshold = isNarrow ? 12 : 25;
+        if (textLen > threshold) {
+          extraHeight += Math.min(36, Math.floor((textLen - threshold) / 10) * 16 + 16);
+        }
+      });
+    }
+    return baseHeight + pairCount * 44 + extraHeight;
   }
   if (block.type === 'multiple_choice') {
     const optCount = block.options?.length || 4;

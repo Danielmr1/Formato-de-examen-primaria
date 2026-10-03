@@ -14,9 +14,55 @@ const getMaxCharsForMatching = (cols: number = 12) => {
 interface MatchingPairsProps {
   block: ExamBlock;
   isEditor: boolean;
-  isSolutionKey?: boolean;
   onUpdateBlock: (updated: Partial<ExamBlock>) => void;
 }
+
+interface AutoResizingTextareaProps {
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  className?: string;
+  maxLength?: number;
+  title?: string;
+}
+
+const AutoResizingTextarea: React.FC<AutoResizingTextareaProps> = ({
+  value,
+  onChange,
+  placeholder,
+  className,
+  maxLength,
+  title
+}) => {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.max(20, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      rows={1}
+      value={value}
+      maxLength={maxLength}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+        }
+      }}
+      onChange={(e) => {
+        onChange(e.target.value.replace(/\n/g, ' '));
+      }}
+      placeholder={placeholder}
+      className={`resize-none overflow-hidden leading-tight ${className || ''}`}
+      title={title}
+    />
+  );
+};
 
 export const MatchingPairs: React.FC<MatchingPairsProps> = ({
   block,
@@ -72,25 +118,24 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
             return (
               <div 
                 key={p.id} 
-                className={`matching-pair-card flex items-center gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
+                className={`matching-pair-card flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
                   isLeftEmpty
                     ? 'bg-amber-50/80 border-amber-300 text-amber-950 ring-1 ring-amber-300/40 print:bg-white print:border-slate-200 print:ring-0'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                 }`}
               >
-                <span className={`matching-pair-badge w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                <span className={`matching-pair-badge w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5 ${
                   isLeftEmpty ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-700'
                 }`}>
                   {idx + 1}
                 </span>
                 {isEditor ? (
-                  <input
-                    type="text"
-                    value={p.leftText}
+                  <AutoResizingTextarea
+                    value={p.leftText || ''}
                     maxLength={maxChars}
-                    onChange={(e) => handleUpdatePair(p.id, { leftText: e.target.value })}
+                    onChange={(val) => handleUpdatePair(p.id, { leftText: val })}
                     placeholder={`Elemento ${idx + 1}...`}
-                    className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs truncate focus:overflow-visible ${
+                    className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs break-words ${
                       isLeftEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
                     }`}
                     title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
@@ -120,21 +165,21 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
             return (
               <div 
                 key={p.id} 
-                className={`matching-pair-card flex items-center gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
+                className={`matching-pair-card flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
                   isRightEmpty
                     ? 'bg-amber-50/80 border-amber-300 text-amber-950 ring-1 ring-amber-300/40 print:bg-white print:border-slate-200 print:ring-0'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                 }`}
               >
                 {/* Modo Impresión (para alumnos sale vacío; para clave docente sale con el número en verde) */}
-                <span className="matching-paren-box hidden print:inline-flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                <span className="matching-paren-box hidden print:inline-flex items-center justify-center font-bold text-xs shrink-0 select-none mt-0.5">
                   ( {isSolutionKey && hasMatch ? <strong className="font-extrabold text-emerald-800">{matchIndex}</strong> : <>&nbsp;&nbsp;&nbsp;</>} )
                 </span>
 
                 {/* Modo Pantalla: Clave Docente */}
                 {isSolutionKey ? (
                   <div 
-                    className="print:hidden flex items-center justify-center font-black text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-400 shrink-0 shadow-2xs select-none"
+                    className="print:hidden flex items-center justify-center font-black text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-400 shrink-0 shadow-2xs select-none mt-0.5"
                     title={`Respuesta correcta: Elemento ${matchIndex || 'sin asignar'}`}
                   >
                     ( {hasMatch ? matchIndex : '?'} )
@@ -142,7 +187,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                 ) : isEditor ? (
                   /* Modo Pantalla: Editor Interactivo con selector en el paréntesis */
                   <div 
-                    className={`print:hidden flex items-center justify-center font-bold text-xs rounded border transition-colors shrink-0 px-1 py-0.5 ${
+                    className={`print:hidden flex items-center justify-center font-bold text-xs rounded border transition-colors shrink-0 px-1 py-0.5 mt-0.5 ${
                       isDuplicate
                         ? 'bg-rose-50 text-rose-700 border-rose-300 ring-1 ring-rose-200'
                         : hasMatch 
@@ -183,23 +228,22 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                   </div>
                 ) : (
                   /* Modo Pantalla: Estudiante / Lectura */
-                  <span className="print:hidden font-bold text-slate-500 text-xs shrink-0 select-none">
+                  <span className="print:hidden font-bold text-slate-500 text-xs shrink-0 select-none mt-0.5">
                     ( &nbsp;&nbsp;&nbsp; )
                   </span>
                 )}
 
-                <span className={`font-bold text-xs shrink-0 ${isRightEmpty ? 'text-amber-900' : 'text-slate-700'}`}>
+                <span className={`font-bold text-xs shrink-0 mt-0.5 ${isRightEmpty ? 'text-amber-900' : 'text-slate-700'}`}>
                   {letter}.
                 </span>
                 {isEditor ? (
                   <>
-                    <input
-                      type="text"
-                      value={p.rightText}
+                    <AutoResizingTextarea
+                      value={p.rightText || ''}
                       maxLength={maxChars}
-                      onChange={(e) => handleUpdatePair(p.id, { rightText: e.target.value })}
+                      onChange={(val) => handleUpdatePair(p.id, { rightText: val })}
                       placeholder={`Definición ${letter}...`}
-                      className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs truncate focus:overflow-visible ${
+                      className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs break-words ${
                         isRightEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
                       }`}
                       title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
@@ -208,7 +252,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                       type="button"
                       onClick={() => handleDeletePair(p.id)}
                       disabled={!canDelete}
-                      className={`p-0.5 rounded print:hidden transition-colors ${
+                      className={`p-0.5 rounded print:hidden transition-colors mt-0.5 ${
                         canDelete
                           ? 'text-slate-400 hover:text-rose-600 cursor-pointer'
                           : 'text-slate-200 cursor-not-allowed opacity-30'
