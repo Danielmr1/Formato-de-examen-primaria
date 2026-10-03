@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-[10px] font-black bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md select-none border border-indigo-200" title="Versión de DocuExam">
-              v6.8
+              v6.9
             </span>
           </div>
           
@@ -170,6 +170,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Missing Title Alert */}
+          {!exam.header?.examTitle?.trim() && (
+            <button 
+              type="button"
+              onClick={() => {
+                setActiveView('editor');
+                setTimeout(() => {
+                  const input = document.querySelector('input[data-exam-title-input="true"]') as HTMLInputElement | null;
+                  if (input) {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    input.focus();
+                  }
+                }, 100);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs cursor-pointer transition-colors"
+              title="Falta escribir el título de la evaluación. Haz clic para escribirlo en el encabezado."
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="text-[11px]">Falta título</span>
+            </button>
+          )}
+
           {/* Empty Options Alert */}
           {questionsWithEmptyOptionsCount > 0 && (
             <button 
@@ -201,8 +223,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Botón Principal: Imprimir / PDF */}
           <button
             onClick={onPrint}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
-            title="Imprimir o guardar en PDF"
+            className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0 ${
+              !exam.header?.examTitle?.trim()
+                ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40'
+                : 'bg-slate-900 hover:bg-slate-800 text-white'
+            }`}
+            title={!exam.header?.examTitle?.trim() ? 'Atención: Debes escribir el título de la evaluación antes de imprimir' : 'Imprimir o guardar en PDF'}
           >
             <Printer className="w-3.5 h-3.5 text-indigo-300" />
             <span className="hidden sm:inline">Imprimir / PDF</span>

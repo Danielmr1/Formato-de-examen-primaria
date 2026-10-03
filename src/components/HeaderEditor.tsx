@@ -111,15 +111,18 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                 ) : null}
                 {isPrintMode ? (
                   <div className="font-black text-xs sm:text-sm text-slate-900 tracking-tight truncate text-center w-full uppercase">
-                    {header.examTitle || 'EVALUACIÓN'}
+                    {header.examTitle || ''}
                   </div>
                 ) : (
                   <input
                     type="text"
+                    data-exam-title-input="true"
                     value={header.examTitle || ''}
                     onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
                     placeholder="TÍTULO DE LA EVALUACIÓN"
-                    className="font-black text-xs sm:text-sm text-slate-900 tracking-tight w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate text-center uppercase"
+                    className={`font-black text-xs sm:text-sm text-slate-900 tracking-tight w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate text-center uppercase ${
+                      !header.examTitle?.trim() ? 'placeholder:text-amber-600/70' : ''
+                    }`}
                   />
                 )}
               </div>
@@ -203,15 +206,18 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                 ) : null}
                 {isPrintMode ? (
                   <div className="font-bold text-xs sm:text-sm text-indigo-950 truncate text-center w-full uppercase">
-                    {header.examTitle || 'EVALUACIÓN'}
+                    {header.examTitle || ''}
                   </div>
                 ) : (
                   <input
                     type="text"
+                    data-exam-title-input="true"
                     value={header.examTitle || ''}
                     onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
                     placeholder="TÍTULO DE LA EVALUACIÓN"
-                    className="font-bold text-xs sm:text-sm text-indigo-950 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate text-center uppercase"
+                    className={`font-bold text-xs sm:text-sm text-indigo-950 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent truncate text-center uppercase ${
+                      !header.examTitle?.trim() ? 'placeholder:text-amber-600/70' : ''
+                    }`}
                   />
                 )}
               </div>
@@ -329,19 +335,22 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                   {/* Exam Title */}
                   {isPrintMode ? (
                     <div className={`font-bold text-xs sm:text-sm text-indigo-900 w-full ${titleAlignClass}`}>
-                      {header.examTitle}
+                      {header.examTitle || ''}
                     </div>
                   ) : (
                     <>
                       <input
                         type="text"
+                        data-exam-title-input="true"
                         value={header.examTitle || ''}
                         onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
                         placeholder="TÍTULO DE LA EVALUACIÓN"
-                        className={`font-bold text-xs sm:text-sm text-indigo-900 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent print:hidden ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass}`}
+                        className={`font-bold text-xs sm:text-sm text-indigo-900 w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden bg-transparent print:hidden ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass} ${
+                          !header.examTitle?.trim() ? 'placeholder:text-amber-600/70' : ''
+                        }`}
                       />
                       <div className={`hidden print:block font-bold text-xs sm:text-sm text-indigo-900 w-full ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass}`}>
-                        {header.examTitle}
+                        {header.examTitle || ''}
                       </div>
                     </>
                   )}
@@ -528,19 +537,22 @@ export const HeaderEditor: React.FC<HeaderEditorProps> = ({
                   {/* Exam Title */}
                   {isPrintMode ? (
                     <div className={`text-base sm:text-lg font-black text-slate-900 tracking-tight w-full ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass}`}>
-                      {header.examTitle}
+                      {header.examTitle || ''}
                     </div>
                   ) : (
                     <>
                       <input
                         type="text"
+                        data-exam-title-input="true"
                         value={header.examTitle || ''}
                         onChange={(e) => onUpdateHeader({ examTitle: e.target.value })}
                         placeholder="TÍTULO DE LA EVALUACIÓN"
-                        className={`text-base sm:text-lg font-black text-slate-900 tracking-tight w-full border-b border-transparent focus:border-indigo-600 focus:outline-hidden bg-transparent print:hidden ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass}`}
+                        className={`text-base sm:text-lg font-black text-slate-900 tracking-tight w-full border-b border-transparent focus:border-indigo-600 focus:outline-hidden bg-transparent print:hidden ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass} ${
+                          !header.examTitle?.trim() ? 'placeholder:text-amber-600/70' : ''
+                        }`}
                       />
                       <div className={`hidden print:block text-base sm:text-lg font-black text-slate-900 tracking-tight w-full ${hasInstitutionName(header.institutionName) ? 'mt-0.5' : ''} ${titleAlignClass}`}>
-                        {header.examTitle}
+                        {header.examTitle || ''}
                       </div>
                     </>
                   )}

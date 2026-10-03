@@ -103,8 +103,26 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [exam, isCloudSaving, cloudSyncStatus]);
 
-  // Guardrail 4: Auditoría previa a la impresión (Bloqueo si faltan claves o hay opciones vacías)
+  // Guardrail 4: Auditoría previa a la impresión (Bloqueo si falta título, faltan claves o hay opciones vacías)
   const handlePrintExam = () => {
+    // 1. Título de la evaluación obligatorio
+    const examHeaderTitle = exam.header?.examTitle?.trim();
+    if (!examHeaderTitle) {
+      notify('⚠️ No se puede imprimir: Debes escribir el título de la evaluación.', 5000);
+      alert('⚠️ No se puede generar o imprimir el examen:\n\nDebes escribir el Título de la Evaluación en el encabezado de la hoja antes de imprimir.');
+      if (activeView !== 'editor') {
+        setActiveView('editor');
+      }
+      setTimeout(() => {
+        const titleInput = document.querySelector('input[data-exam-title-input="true"]') as HTMLInputElement | null;
+        if (titleInput) {
+          titleInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          titleInput.focus();
+        }
+      }, 150);
+      return;
+    }
+
     const issues: string[] = [];
 
     exam.blocks.forEach((block, idx) => {
