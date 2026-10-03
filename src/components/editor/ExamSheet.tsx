@@ -138,6 +138,53 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
     }
   }, [estimatedPages, onPagesCalculated]);
 
+  const [segmentMargins, setSegmentMargins] = useState<number[]>([]);
+
+  // Evitar que las preguntas se corten entre páginas en pantalla: salto inteligente de bloque
+  useEffect(() => {
+    if (!contentRef.current) return;
+
+    const calculateMargins = () => {
+      if (!contentRef.current) return;
+      const headerEl = contentRef.current.querySelector('.exam-header-block') as HTMLElement | null;
+      const segmentEls = contentRef.current.querySelectorAll('.exam-layout-segment');
+      if (!segmentEls || segmentEls.length === 0) return;
+
+      const headerHeight = headerEl ? headerEl.offsetHeight + 14 : 110;
+      const gap = 16;
+      let currentPageY = headerHeight;
+      const newMargins: number[] = [];
+
+      segmentEls.forEach((el) => {
+        const segEl = el as HTMLElement;
+        const segHeight = segEl.offsetHeight;
+
+        // Si la pregunta cabe en una página estándar y supera el espacio restante de la página actual
+        if (segHeight <= targetPageHeightPx && currentPageY + segHeight > targetPageHeightPx) {
+          const jumpMargin = targetPageHeightPx - currentPageY;
+          newMargins.push(Math.max(0, jumpMargin));
+          currentPageY = segHeight + gap;
+        } else {
+          newMargins.push(0);
+          currentPageY += segHeight + gap;
+          while (currentPageY >= targetPageHeightPx) {
+            currentPageY -= targetPageHeightPx;
+          }
+        }
+      });
+
+      setSegmentMargins(prev => {
+        if (prev.length === newMargins.length && prev.every((val, idx) => Math.abs(val - newMargins[idx]) < 2)) {
+          return prev;
+        }
+        return newMargins;
+      });
+    };
+
+    const timer = setTimeout(calculateMargins, 50);
+    return () => clearTimeout(timer);
+  }, [exam.blocks, exam.header, exam.settings, activeView, contentHeight, targetPageHeightPx]);
+
   const isPreviewMode = activeView === 'preview_a4' || activeView === 'solution_key';
 
   const getSheetClasses = () => {
@@ -196,10 +243,17 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
         {/* Dynamic Tetris / Masonry Bento Grid of Question Blocks */}
         <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isInteractive ? 'pt-4' : ''}`}>
           {buildMasonrySegments(exam.blocks).map((segment, segIdx) => {
+            const jumpMargin = segmentMargins[segIdx] || 0;
+            const jumpStyle = jumpMargin > 0 ? { marginTop: `${jumpMargin}px` } : undefined;
+
             if (segment.type === 'full' && segment.fullBlock) {
               const { block, index: idx } = segment.fullBlock;
               return (
-                <div key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} className="w-full exam-layout-segment">
+                <div 
+                  key={`${block.id}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} 
+                  className="w-full exam-layout-segment print:!mt-0"
+                  style={jumpStyle}
+                >
                   <BlockItem
                     block={block}
                     index={idx}
@@ -233,7 +287,11 @@ export const ExamSheet: React.FC<ExamSheetProps> = ({
               const firstRight = segment.rightColumn?.[0];
 
               return (
-                <div key={`split-${segIdx}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start exam-layout-segment">
+                <div 
+                  key={`split-${segIdx}-${isDuplicateCopy ? 'dup' : 'orig'}-${isPrintOnly ? 'print' : 'screen'}`} 
+                  className="grid grid-cols-12 gap-3.5 sm:gap-4.5 items-start exam-layout-segment print:!mt-0"
+                  style={jumpStyle}
+                >
                   {/* Left Column */}
                   <div className={`col-span-12 ${getColSpanClassSafe(leftCols)} flex flex-col gap-3.5 sm:gap-4.5`}>
                     {segment.leftColumn?.map(({ block, index: idx }, leftIdx) => {

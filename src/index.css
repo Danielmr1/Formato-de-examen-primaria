@@ -65,6 +65,7 @@
   .exam-layout-segment {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+    margin-top: 0 !important;
   }
 
   .exam-block-item {
