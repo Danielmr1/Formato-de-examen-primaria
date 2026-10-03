@@ -36,17 +36,30 @@ const AutoResizingTextarea: React.FC<AutoResizingTextareaProps> = ({
 }) => {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.max(20, textareaRef.current.scrollHeight)}px`;
-    }
+  React.useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const adjustHeight = () => {
+      el.style.height = 'auto';
+      el.style.height = `${Math.max(20, el.scrollHeight)}px`;
+    };
+
+    adjustHeight();
+
+    const ro = new ResizeObserver(() => {
+      adjustHeight();
+    });
+    ro.observe(el);
+
+    return () => ro.disconnect();
   }, [value]);
 
   return (
     <textarea
       ref={textareaRef}
       rows={1}
+      cols={1}
       value={value}
       maxLength={maxLength}
       onKeyDown={(e) => {
@@ -58,7 +71,8 @@ const AutoResizingTextarea: React.FC<AutoResizingTextareaProps> = ({
         onChange(e.target.value.replace(/\n/g, ' '));
       }}
       placeholder={placeholder}
-      className={`resize-none overflow-hidden leading-tight ${className || ''}`}
+      className={`resize-none overflow-hidden leading-tight min-w-0 w-full whitespace-pre-wrap ${className || ''}`}
+      style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
       title={title}
     />
   );
@@ -118,7 +132,7 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
             return (
               <div 
                 key={p.id} 
-                className={`matching-pair-card flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
+                className={`matching-pair-card flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-visible transition-colors ${
                   isLeftEmpty
                     ? 'bg-amber-50/80 border-amber-300 text-amber-950 ring-1 ring-amber-300/40 print:bg-white print:border-slate-200 print:ring-0'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
@@ -135,13 +149,13 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                     maxLength={maxChars}
                     onChange={(val) => handleUpdatePair(p.id, { leftText: val })}
                     placeholder={`Elemento ${idx + 1}...`}
-                    className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs break-words ${
+                    className={`flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs ${
                       isLeftEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
                     }`}
                     title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
                   />
                 ) : (
-                  <span className="flex-1 break-words overflow-hidden">
+                  <span className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] [word-break:break-word] overflow-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                     <FormattedMathText text={p.leftText} />
                   </span>
                 )}
@@ -165,12 +179,24 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
             return (
               <div 
                 key={p.id} 
-                className={`matching-pair-card flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-hidden transition-colors ${
+                className={`matching-pair-card group relative flex items-start gap-2 p-1.5 rounded-lg border text-xs break-words overflow-visible transition-colors ${
                   isRightEmpty
                     ? 'bg-amber-50/80 border-amber-300 text-amber-950 ring-1 ring-amber-300/40 print:bg-white print:border-slate-200 print:ring-0'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                 }`}
               >
+                {/* Botón flotante para eliminar (Opción A: sólo aparece al pasar el mouse por la tarjeta, sin restar ancho al texto) */}
+                {isEditor && canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePair(p.id)}
+                    className="absolute -top-2 -right-2 z-20 p-1 rounded-full bg-white border border-slate-300 shadow-xs print:hidden transition-all opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 cursor-pointer"
+                    title="Eliminar este par"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+
                 {/* Modo Impresión (para alumnos sale vacío; para clave docente sale con el número en verde) */}
                 <span className="matching-paren-box hidden print:inline-flex items-center justify-center font-bold text-xs shrink-0 select-none mt-0.5">
                   ( {isSolutionKey && hasMatch ? <strong className="font-extrabold text-emerald-800">{matchIndex}</strong> : <>&nbsp;&nbsp;&nbsp;</>} )
@@ -237,33 +263,18 @@ export const MatchingPairs: React.FC<MatchingPairsProps> = ({
                   {letter}.
                 </span>
                 {isEditor ? (
-                  <>
-                    <AutoResizingTextarea
-                      value={p.rightText || ''}
-                      maxLength={maxChars}
-                      onChange={(val) => handleUpdatePair(p.id, { rightText: val })}
-                      placeholder={`Definición ${letter}...`}
-                      className={`flex-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs break-words ${
-                        isRightEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
-                      }`}
-                      title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleDeletePair(p.id)}
-                      disabled={!canDelete}
-                      className={`p-0.5 rounded print:hidden transition-colors mt-0.5 ${
-                        canDelete
-                          ? 'text-slate-400 hover:text-rose-600 cursor-pointer'
-                          : 'text-slate-200 cursor-not-allowed opacity-30'
-                      }`}
-                      title={canDelete ? 'Eliminar este par' : 'Mínimo 2 pares requeridos'}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </>
+                  <AutoResizingTextarea
+                    value={p.rightText || ''}
+                    maxLength={maxChars}
+                    onChange={(val) => handleUpdatePair(p.id, { rightText: val })}
+                    placeholder={`Definición ${letter}...`}
+                    className={`flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-hidden py-0.5 text-xs ${
+                      isRightEmpty ? 'placeholder:text-amber-700/60' : 'placeholder:text-slate-400'
+                    }`}
+                    title={`Límite para este ancho: máx. ${maxChars} caracteres (palabras de máx. 20 letras)`}
+                  />
                 ) : (
-                  <span className="flex-1 break-words overflow-hidden">
+                  <span className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] [word-break:break-word] overflow-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                     <FormattedMathText text={p.rightText} />
                   </span>
                 )}
